@@ -13,6 +13,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { uploadToIPFS } from '@/lib/ipfs';
+import { useWallet } from '@/hooks/useWallet';
+import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { CONTRACT_ADDRESSES } from '@/config/contracts';
 
 const eventSchema = z.object({
   name: z.string().min(3, 'Event name must be at least 3 characters'),
@@ -29,12 +32,41 @@ const eventSchema = z.object({
 
 type EventFormData = z.infer<typeof eventSchema>;
 
+const EVENT_ABI = [
+  {
+    name: 'createEvent',
+    type: 'function',
+    inputs: [
+      { name: '_name', type: 'string' },
+      { name: '_description', type: 'string' },
+      { name: '_imageURI', type: 'string' },
+      { name: '_location', type: 'string' },
+      { name: '_ticketPrice', type: 'uint256' },
+      { name: '_totalTickets', type: 'uint256' },
+      { name: '_eventDate', type: 'uint256' },
+      { name: '_saleStartTime', type: 'uint256' },
+      { name: '_saleEndTime', type: 'uint256' },
+      { name: '_paymentToken', type: 'address' },
+      { name: '_resaleEnabled', type: 'bool' },
+      { name: '_maxResalePrice', type: 'uint256' },
+      { name: '_groupBuyDiscount', type: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'nonpayable',
+  },
+] as const;
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
 export default function CreateEvent() {
+  const { address } = useWallet();
+  const { writeContractAsync } = useWriteContract();
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [resaleEnabled, setResaleEnabled] = useState(false);
   const [groupBuyEnabled, setGroupBuyEnabled] = useState(false);
+  const [txHash, setTxHash] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -73,34 +105,64 @@ export default function CreateEvent() {
   };
 
   const onSubmit = async (data: EventFormData) => {
+    if (!address) {
+      toast.error('Please connect your wallet first');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      let uploadedImageURI = '';
+      let uploadedImageURI = imagePreview;
       
       if (imageFile) {
-        const ipfsUrl = await uploadToIPFS(imageFile);
-        if (ipfsUrl) {
-          uploadedImageURI = ipfsUrl;
-        } else {
-          uploadedImageURI = imagePreview;
+        try {
+          const ipfsUrl = await uploadToIPFS(imageFile);
+          if (ipfsUrl) {
+            uploadedImageURI = ipfsUrl;
+          }
+        } catch (ipfsError) {
+          console.error('IPFS upload failed, using preview URL:', ipfsError);
         }
       }
 
-      const eventData = {
-        ...data,
-        imageURI: uploadedImageURI,
-        resaleEnabled,
-        groupBuyEnabled,
-        eventDateUnix: data.eventDate ? Math.floor(new Date(data.eventDate).getTime() / 1000) : 0,
-        saleStartTimeUnix: data.saleStartTime ? Math.floor(new Date(data.saleStartTime).getTime() / 1000) : 0,
-        saleEndTimeUnix: data.saleEndTime ? Math.floor(new Date(data.saleEndTime).getTime() / 1000) : 0,
-      };
+      const ticketPriceWei = BigInt(Math.floor(parseFloat(data.ticketPrice) * 1e18));
+      const maxResalePriceWei = resaleEnabled && data.maxResalePrice 
+        ? BigInt(Math.floor(parseFloat(data.maxResalePrice) * 1e18))
+        : BigInt(0);
+      const groupBuyDiscountBps = groupBuyEnabled && data.groupBuyDiscount 
+        ? BigInt(Math.floor(parseFloat(data.groupBuyDiscount) * 100))
+        : BigInt(0);
 
-      console.log('Event data:', eventData);
-      toast.success('Event created successfully!');
+      const tx = await writeContractAsync({
+        address: CONTRACT_ADDRESSES.event as `0x${string}`,
+        abi: EVENT_ABI,
+        functionName: 'createEvent',
+        args: [
+          data.name,
+          data.description,
+          uploadedImageURI,
+          data.location,
+          ticketPriceWei,
+          BigInt(data.totalTickets),
+          BigInt(Math.floor(new Date(data.eventDate).getTime() / 1000)),
+          BigInt(Math.floor(new Date(data.saleStartTime).getTime() / 1000)),
+          BigInt(Math.floor(new Date(data.saleEndTime).getTime() / 1000)),
+          ZERO_ADDRESS,
+          resaleEnabled,
+          maxResalePriceWei,
+          groupBuyDiscountBps,
+        ],
+      });
+
+      setTxHash(tx);
+      toast.success('Event created! Transaction submitted.');
+      
+      if (tx) {
+        toast.message('Transaction Hash:', tx);
+      }
     } catch (error) {
-      console.error(error);
-      toast.error('Failed to create event');
+      console.error('Failed to create event:', error);
+      toast.error('Failed to create event. See console for details.');
     } finally {
       setIsLoading(false);
     }
