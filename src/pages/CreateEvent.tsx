@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,10 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { uploadToIPFS } from '@/lib/ipfs';
 
 const eventSchema = z.object({
   name: z.string().min(3, 'Event name must be at least 3 characters'),
@@ -31,9 +31,11 @@ type EventFormData = z.infer<typeof eventSchema>;
 
 export default function CreateEvent() {
   const [isLoading, setIsLoading] = useState(false);
-  const [imageURI, setImageURI] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [resaleEnabled, setResaleEnabled] = useState(false);
   const [groupBuyEnabled, setGroupBuyEnabled] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -42,12 +44,59 @@ export default function CreateEvent() {
     watch,
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
+    defaultValues: {
+      eventDate: '',
+      saleStartTime: '',
+      saleEndTime: '',
+    },
   });
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const preview = URL.createObjectURL(file);
+      setImagePreview(preview);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const onSubmit = async (data: EventFormData) => {
     setIsLoading(true);
     try {
-      console.log('Event data:', { ...data, imageURI, resaleEnabled, groupBuyEnabled });
+      let uploadedImageURI = '';
+      
+      if (imageFile) {
+        const ipfsUrl = await uploadToIPFS(imageFile);
+        if (ipfsUrl) {
+          uploadedImageURI = ipfsUrl;
+        } else {
+          uploadedImageURI = imagePreview;
+        }
+      }
+
+      const eventData = {
+        ...data,
+        imageURI: uploadedImageURI,
+        resaleEnabled,
+        groupBuyEnabled,
+        eventDateUnix: data.eventDate ? Math.floor(new Date(data.eventDate).getTime() / 1000) : 0,
+        saleStartTimeUnix: data.saleStartTime ? Math.floor(new Date(data.saleStartTime).getTime() / 1000) : 0,
+        saleEndTimeUnix: data.saleEndTime ? Math.floor(new Date(data.saleEndTime).getTime() / 1000) : 0,
+      };
+
+      console.log('Event data:', eventData);
       toast.success('Event created successfully!');
     } catch (error) {
       console.error(error);
@@ -55,6 +104,12 @@ export default function CreateEvent() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getTodayDateTime = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
   };
 
   return (
@@ -147,13 +202,19 @@ export default function CreateEvent() {
 
                     <div className="space-y-2">
                       <Label>Event Image</Label>
-                      <div className="border-2 border-dashed border-copper-200 rounded-lg p-8 text-center hover:border-copper-400 transition-colors cursor-pointer">
-                        {imageURI ? (
+                      <div 
+                        className="border-2 border-dashed border-copper-200 rounded-lg p-8 text-center hover:border-copper-400 transition-colors cursor-pointer"
+                        onClick={handleImageClick}
+                      >
+                        {imagePreview ? (
                           <div className="relative">
-                            <img src={imageURI} alt="Event" className="max-h-48 mx-auto rounded-lg" />
+                            <img src={imagePreview} alt="Event" className="max-h-48 mx-auto rounded-lg" />
                             <button
                               type="button"
-                              onClick={() => setImageURI('')}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeImage();
+                              }}
                               className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
                             >
                               <X className="w-4 h-4" />
@@ -170,18 +231,14 @@ export default function CreateEvent() {
                             </p>
                           </div>
                         )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setImageURI(URL.createObjectURL(file));
-                            }
-                          }}
-                        />
                       </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -191,10 +248,14 @@ export default function CreateEvent() {
                         <Input
                           id="eventDate"
                           type="datetime-local"
+                          min={getTodayDateTime()}
                           {...register('eventDate')}
                           className={`pl-10 ${errors.eventDate ? 'border-red-500' : ''}`}
                         />
                       </div>
+                      {errors.eventDate && (
+                        <p className="text-sm text-red-500">{errors.eventDate.message}</p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -218,6 +279,7 @@ export default function CreateEvent() {
                             id="ticketPrice"
                             type="number"
                             step="0.001"
+                            min="0"
                             placeholder="0.05"
                             {...register('ticketPrice')}
                             className={`pl-10 ${errors.ticketPrice ? 'border-red-500' : ''}`}
@@ -232,6 +294,7 @@ export default function CreateEvent() {
                           <Input
                             id="totalTickets"
                             type="number"
+                            min="1"
                             placeholder="100"
                             {...register('totalTickets')}
                             className={`pl-10 ${errors.totalTickets ? 'border-red-500' : ''}`}
@@ -248,6 +311,7 @@ export default function CreateEvent() {
                           <Input
                             id="saleStartTime"
                             type="datetime-local"
+                            min={getTodayDateTime()}
                             {...register('saleStartTime')}
                             className="pl-10"
                           />
@@ -261,6 +325,7 @@ export default function CreateEvent() {
                           <Input
                             id="saleEndTime"
                             type="datetime-local"
+                            min={getTodayDateTime()}
                             {...register('saleEndTime')}
                             className="pl-10"
                           />
@@ -289,6 +354,7 @@ export default function CreateEvent() {
                             id="groupBuyDiscount"
                             type="number"
                             step="0.001"
+                            min="0"
                             placeholder="0.01"
                             {...register('groupBuyDiscount')}
                           />
@@ -328,6 +394,7 @@ export default function CreateEvent() {
                           id="maxResalePrice"
                           type="number"
                           step="0.001"
+                          min="0"
                           placeholder="0.10"
                           {...register('maxResalePrice')}
                         />

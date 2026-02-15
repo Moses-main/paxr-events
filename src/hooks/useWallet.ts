@@ -1,7 +1,7 @@
-import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useState, useEffect } from 'react';
-import { useAccount, useDisconnect, useConnect, useSwitchChain } from 'wagmi';
-import { injected } from 'wagmi/connectors';
+import { usePrivy } from '@privy-io/react-auth';
+import { useAccount, useDisconnect } from 'wagmi';
+import { toast } from 'sonner';
 
 interface WalletState {
   isConnected: boolean;
@@ -14,12 +14,9 @@ interface WalletState {
 }
 
 export function useWallet(): WalletState {
-  const { login, logout, user, isAuthenticated } = usePrivy();
-  const { wallets } = useWallets();
+  const { login, logout, user } = usePrivy();
   const { address, chainId, isConnected: wagmiConnected } = useAccount();
   const { disconnect: wagmiDisconnect } = useDisconnect();
-  const { connect } = useConnect();
-  const { switchChainAsync } = useSwitchChain();
   
   const [isReady, setIsReady] = useState(false);
 
@@ -29,20 +26,18 @@ export function useWallet(): WalletState {
 
   const connectWallet = async () => {
     try {
-      if (!isAuthenticated) {
-        await login();
-      }
+      await login();
     } catch (error) {
       console.error('Failed to connect wallet:', error);
+      toast.error('Failed to connect wallet');
     }
   };
 
   const disconnectWallet = async () => {
     try {
-      if (isAuthenticated) {
-        await logout();
-      }
+      await logout();
       wagmiDisconnect();
+      toast.success('Wallet disconnected');
     } catch (error) {
       console.error('Failed to disconnect wallet:', error);
     }
@@ -50,17 +45,24 @@ export function useWallet(): WalletState {
 
   const switchNetwork = async (targetChainId: number) => {
     try {
-      await switchChainAsync({ chainId: targetChainId });
+      if (window.ethereum) {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: `0x${targetChainId.toString(16)}` }],
+        });
+      }
     } catch (error) {
       console.error('Failed to switch network:', error);
+      toast.error('Failed to switch network');
     }
   };
 
-  const primaryWallet = wallets.find(w => w.walletClientType === 'privy') || wallets[0];
-  const walletAddress = primaryWallet?.address || address || null;
+  const privyAddress = user?.wallet?.address;
+  const walletAddress = privyAddress || address || null;
+  const isConnected = !!(privyAddress || wagmiConnected);
 
   return {
-    isConnected: isAuthenticated || wagmiConnected,
+    isConnected,
     address: walletAddress,
     chainId: chainId || null,
     isReady,
