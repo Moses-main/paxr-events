@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Menu, X, Wallet } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConnectWallet } from "./ConnectWallet";
 
 const navItems = [
   { label: "Events", href: "/#events" },
@@ -42,13 +43,7 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm" className="text-muted-foreground">
-            Sign In
-          </Button>
-          <Button size="sm" className="bg-gradient-copper text-primary-foreground hover:opacity-90 shadow-copper gap-2">
-            <Wallet className="h-4 w-4" />
-            Connect Wallet
-          </Button>
+          <ConnectWallet />
         </div>
 
         {/* Mobile toggle */}
@@ -73,10 +68,9 @@ const Navbar = () => {
               {item.label}
             </a>
           ))}
-          <Button className="w-full mt-4 bg-gradient-copper text-primary-foreground gap-2">
-            <Wallet className="h-4 w-4" />
-            Connect Wallet
-          </Button>
+          <div className="mt-4">
+            <ConnectWallet />
+          </div>
         </motion.div>
       )}
     </motion.nav>
