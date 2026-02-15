@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Calendar, MapPin, Users, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -112,8 +113,8 @@ const FeaturedEvents = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {events.map((event) => (
+            <Link to={`/event/${event.id}`} key={event.id}>
             <motion.div
-              key={event.id}
               variants={item}
               className="group relative rounded-xl border border-border bg-card overflow-hidden hover:border-copper/40 transition-all duration-300 hover:shadow-copper cursor-pointer"
             >
@@ -154,6 +155,7 @@ const FeaturedEvents = () => {
                 </div>
               </div>
             </motion.div>
+            </Link>
           ))}
         </motion.div>
       </div>
