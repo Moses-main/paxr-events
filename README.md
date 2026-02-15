@@ -1,73 +1,162 @@
-# Welcome to your Lovable project
+# Paxr - Decentralized Event Ticketing Marketplace
 
-## Project info
+![Paxr Logo](/public/Paxr_generic.png)
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Paxr is a decentralized event ticketing marketplace built on **Arbitrum Orbit**. It enables event organizers to create events and sell NFT-based tickets with built-in anti-scalping protection, resale controls, and group buy functionality.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **NFT Ticketing**: All tickets are ERC-721 NFTs with verified ownership
+- **Anti-Scalping**: Configurable resale price caps to prevent scalping
+- **Group Buy**: Allow attendees to pool together for discounted tickets
+- **Cross-Chain Support**: Multi-chain support (Arbitrum One, Arbitrum Sepolia, Ethereum, Polygon)
+- **Wallet Connection**: Privy-based wallet integration with easy network switching
+- **Real-time Data**: Direct smart contract integration for live event data
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Frontend**: React, TypeScript, Vite
+- **Styling**: Tailwind CSS, shadcn/ui
+- **Web3**: Wagmi, Privy
+- **Smart Contracts**: Solidity (Arbitrum)
+- **Data**: Alchemy RPC for contract reads
 
-Changes made via Lovable will be committed automatically to this repo.
+## Architecture
 
-**Use your preferred IDE**
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Frontend                              │
+│  ┌─────────┐  ┌──────────┐  ┌─────────┐  ┌─────────────┐  │
+│  │ Navbar  │  │ Marketplace│  │EventDetail│ │ CreateEvent │  │
+│  └────┬────┘  └─────┬────┘  └────┬────┘  └──────┬──────┘  │
+│       │             │             │               │          │
+│  ┌────┴─────────────┴─────────────┴───────────────┴────┐   │
+│  │              Web3Provider (Wagmi + Privy)            │   │
+│  └────────────────────────┬────────────────────────────┘   │
+└───────────────────────────┼─────────────────────────────────┘
+                            │
+                    ┌───────┴───────┐
+                    │  Alchemy RPC  │
+                    │ (Arbitrum)    │
+                    └───────┬───────┘
+                            │
+┌───────────────────────────┼─────────────────────────────────┐
+│                    Smart Contracts                           │
+│  ┌────────────┐  ┌──────────────┐  ┌───────────────────┐  │
+│  │PaxrEvent   │  │ PaxrTicket   │  │ PaxrMarketplace  │  │
+│  │(Event Mgmt)│  │ (NFT Tickets)│  │ (Resale/Trading)  │  │
+│  └────────────┘  └──────────────┘  └───────────────────┘  │
+│                                                               │
+│                    Arbitrum Sepolia                          │
+└───────────────────────────────────────────────────────────────┘
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## User Flows
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Create Event Flow
+```
+Organizer → Connect Wallet → Fill Event Form → Upload Image (IPFS) 
+→ Submit Transaction → Event Created on Blockchain → Appears in Marketplace
+```
 
-Follow these steps:
+### Buy Ticket Flow
+```
+User → Browse Marketplace → View Event Details → Connect Wallet 
+→ Select Quantity → Mint NFT Ticket → Transaction Confirmed 
+→ Ticket Appears in "My Tickets"
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Resell Ticket Flow
+```
+Ticket Owner → My Tickets → Select Ticket → List for Sale 
+→ Set Price → Marketplace Listing → Buyer Purchases 
+→ Ticket Transferred → Seller Receives Payment
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Smart Contracts
 
-# Step 3: Install the necessary dependencies.
-npm i
+| Contract | Address (Arbitrum Sepolia) | Purpose |
+|----------|---------------------------|---------|
+| PaxrEvent | `0xc9497Ec40951FbB98C02c666b7F9Fa143678E2Be` | Event creation & management |
+| PaxrTicket | `0x84b9F7f2243a25A1539e25C3E14c097cc2b3F4e6` | NFT ticket minting |
+| PaxrMarketplace | `0x802A6843516f52144b3F1D04E5447A085d34aF37` | Ticket resale & trading |
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- MetaMask or other Web3 wallet
+
+### Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create a `.env` file with the following:
 
-**Use GitHub Codespaces**
+```env
+VITE_PRIVY_APP_ID=your_privy_app_id
+VITE_ARBITRUM_SEPOLIA_RPC=your_alchemy_rpc_url
+VITE_PAXR_EVENT_ADDRESS=0xc9497Ec40951FbB98C02c666b7F9Fa143678E2Be
+VITE_PAXR_TICKET_ADDRESS=0x84b9F7f2243a25A1539e25C3E14c097cc2b3F4e6
+VITE_PAXR_MARKETPLACE_ADDRESS=0x802A6843516f52144b3F1D04E5447A085d34aF37
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Build
 
-## What technologies are used for this project?
+```bash
+npm run build
+```
 
-This project is built with:
+## Pages
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+| Route | Description |
+|-------|-------------|
+| `/` | Homepage with featured events |
+| `/marketplace` | Browse all events |
+| `/event/:id` | Event details & ticket purchase |
+| `/create` | Create new event (organizer) |
+| `/my-tickets` | View owned NFT tickets |
 
-## How can I deploy this project?
+## Supported Networks
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+- **Arbitrum One** (Mainnet)
+- **Arbitrum Sepolia** (Testnet)
+- **Ethereum** (Mainnet)
+- **Polygon** (Mainnet)
 
-## Can I connect a custom domain to my Lovable project?
+## Roadmap
 
-Yes, you can!
+### Phase 5: Privacy & Cross-Chain
+- [ ] Fhenix integration for encrypted attendee data
+- [ ] Anonymous RSVP system
+- [ ] LayerZero cross-chain ticket bridging
+- [ ] Group buy functionality
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Phase 6: Social Features
+- [ ] Fan communities section
+- [ ] Referral system
+- [ ] Shareable attendance proofs
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Phase 7: Analytics & Dashboard
+- [ ] Dune Analytics integration
+- [ ] Organizer dashboard
+- [ ] Payment analytics
+
+### Phase 8: Testing & Deployment
+- [ ] Unit tests
+- [ ] Mainnet deployment
+- [ ] Production setup
+
+## License
+
+MIT

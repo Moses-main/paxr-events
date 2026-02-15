@@ -23,9 +23,7 @@ const Navbar = () => {
     >
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         <a href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-copper flex items-center justify-center">
-            <span className="font-display font-bold text-primary-foreground text-sm">P</span>
-          </div>
+          <img src="/Paxr_generic.png" alt="Paxr" className="h-8 w-8 rounded-lg object-cover" />
           <span className="font-display text-xl font-bold text-foreground">Paxr</span>
         </a>
 

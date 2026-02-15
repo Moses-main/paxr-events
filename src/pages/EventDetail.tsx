@@ -1,47 +1,161 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Calendar, MapPin, Users, Shield, Clock, ArrowLeft,
-  Ticket, Lock, Share2, Heart,
+  Ticket, Lock, Share2, Heart, Loader2, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TransactionTracker from "@/components/TransactionTracker";
+import { getEvent, EventData } from "@/lib/alchemy";
+import { useWallet } from "@/hooks/useWallet";
+import { useWriteContract } from "wagmi";
+import { CONTRACT_ADDRESSES } from "@/config/contracts";
+import { toast } from "sonner";
 
-const eventData = {
-  id: "1",
-  title: "Neon Horizons Festival",
-  date: "March 15, 2026",
-  time: "6:00 PM - 2:00 AM",
-  location: "Wynwood Arts District, Miami, FL",
-  description:
-    "A groundbreaking fusion of electronic music, immersive art, and Web3 culture. Experience world-class DJs, NFT art installations, and verifiable attendance proofs.",
-  image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop",
-  organizer: "NeonDAO",
-  attendees: 2400,
-  maxCapacity: 5000,
-  category: "Music",
-  chain: "Arbitrum Orbit",
-  encrypted: true,
-  tiers: [
-    { name: "General Admission", price: "0.05 ETH", priceUsd: "$160", available: 1823, total: 3000, perks: ["Venue access", "Attendance proof NFT"] },
-    { name: "VIP", price: "0.12 ETH", priceUsd: "$385", available: 412, total: 1500, perks: ["Priority entry", "VIP lounge", "Merch airdrop", "Attendance proof NFT"] },
-    { name: "Backstage", price: "0.25 ETH", priceUsd: "$800", available: 47, total: 500, perks: ["All VIP perks", "Meet & Greet", "Exclusive POAP", "Lifetime community access"] },
-  ],
-};
+const TICKET_ABI = [
+  {
+    name: 'mintTicket',
+    type: 'function',
+    inputs: [
+      { name: '_eventId', type: 'uint256' },
+      { name: '_quantity', type: 'uint256' },
+    ],
+    outputs: [],
+    stateMutability: 'payable',
+  },
+] as const;
 
 const EventDetail = () => {
   const { id } = useParams();
-  const [selectedTier, setSelectedTier] = useState(0);
+  const [event, setEvent] = useState<EventData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [showTracker, setShowTracker] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [isMinting, setIsMinting] = useState(false);
+  
+  const { address, isConnected } = useWallet();
+  const { writeContractAsync } = useWriteContract();
 
-  const event = eventData;
-  const tier = event.tiers[selectedTier];
+  useEffect(() => {
+    const fetchEvent = async () => {
+      if (!id) return;
+      try {
+        const eventId = parseInt(id);
+        const data = await getEvent(eventId);
+        setEvent(data);
+      } catch (error) {
+        console.error("Failed to fetch event:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvent();
+  }, [id]);
+
+  const handleBuyTicket = async () => {
+    if (!address || !event) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
+    setIsMinting(true);
+    try {
+      const pricePerTicket = BigInt(event.ticketPrice);
+      const totalPrice = pricePerTicket * BigInt(quantity);
+
+      const tx = await writeContractAsync({
+        address: CONTRACT_ADDRESSES.ticket as `0x${string}`,
+        abi: TICKET_ABI,
+        functionName: 'mintTicket',
+        args: [BigInt(event.eventId), BigInt(quantity)],
+        value: totalPrice,
+      } as any);
+
+      setShowTracker(true);
+      toast.success("Ticket purchase initiated!");
+    } catch (error) {
+      console.error("Failed to buy ticket:", error);
+      toast.error("Failed to purchase ticket");
+    } finally {
+      setIsMinting(false);
+    }
+  };
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const formatTime = (timestamp: number) => {
+    return new Date(timestamp * 1000).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
+  const formatPrice = (price: string) => {
+    const eth = parseFloat(price) / 1e18;
+    return `${eth.toFixed(4)} ETH`;
+  };
+
+  const getStatus = () => {
+    if (!event) return { label: "Unknown", variant: "secondary" as const };
+    const now = Math.floor(Date.now() / 1000);
+    
+    if (!event.isActive) {
+      return { label: "Inactive", variant: "secondary" as const };
+    }
+    if (event.saleStartTime > now) {
+      return { label: "Upcoming", className: "bg-blue-100 text-blue-700" };
+    }
+    if (event.saleEndTime < now) {
+      return { label: "Ended", variant: "secondary" as const };
+    }
+    if (event.ticketsSold >= event.totalTickets) {
+      return { label: "Sold Out", variant: "secondary" as const };
+    }
+    return { label: "On Sale", className: "bg-green-100 text-green-700" };
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex items-center justify-center pt-40">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-6 pt-40 pb-24 text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Event Not Found</h1>
+          <p className="text-muted-foreground mb-6">The event you're looking for doesn't exist.</p>
+          <Link to="/marketplace">
+            <Button>Browse Events</Button>
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const status = getStatus();
+  const pricePerTicket = formatPrice(event.ticketPrice);
+  const totalPrice = (parseFloat(event.ticketPrice) / 1e18 * quantity).toFixed(4);
+  const availableTickets = event.totalTickets - event.ticketsSold;
 
   return (
     <div className="min-h-screen bg-background">
@@ -49,17 +163,23 @@ const EventDetail = () => {
       <TransactionTracker
         isOpen={showTracker}
         onClose={() => setShowTracker(false)}
-        eventTitle={event.title}
-        ticketTier={tier.name}
-        price={tier.price}
+        eventTitle={event.name}
+        ticketTier="General Admission"
+        price={`${totalPrice} ETH`}
       />
 
       {/* Hero Banner */}
       <div className="relative h-[40vh] md:h-[50vh] overflow-hidden">
-        <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+        {event.imageURI ? (
+          <img src={event.imageURI} alt={event.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-copper-100 to-copper-200 flex items-center justify-center">
+            <Ticket className="h-24 w-24 text-copper-400" />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
         <div className="absolute top-24 left-6">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors bg-card/80 backdrop-blur rounded-lg px-3 py-1.5">
+          <Link to="/marketplace" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors bg-card/80 backdrop-blur rounded-lg px-3 py-1.5">
             <ArrowLeft className="h-4 w-4" /> Back
           </Link>
         </div>
@@ -71,24 +191,24 @@ const EventDetail = () => {
           <div className="lg:col-span-2 space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <div className="flex items-center gap-3 mb-3">
-                <Badge variant="secondary" className="bg-surface-elevated text-foreground">{event.category}</Badge>
-                {event.encrypted && (
+                <Badge variant="secondary" className="bg-surface-elevated text-foreground">Event</Badge>
+                {event.groupBuyDiscount && parseInt(event.groupBuyDiscount) > 0 && (
                   <Badge className="bg-primary/10 text-primary border border-primary/20 gap-1">
-                    <Lock className="h-3 w-3" /> Encrypted
+                    <Users className="h-3 w-3" /> Group Buy
                   </Badge>
                 )}
-                <Badge variant="outline" className="border-copper/30 text-copper-light">{event.chain}</Badge>
+                <Badge variant="outline" className="border-copper/30 text-copper-light">Arbitrum Orbit</Badge>
               </div>
-              <h1 className="font-display text-3xl md:text-5xl font-bold text-foreground">{event.title}</h1>
+              <h1 className="font-display text-3xl md:text-5xl font-bold text-foreground">{event.name}</h1>
               <p className="text-muted-foreground mt-1">by {event.organizer}</p>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { icon: Calendar, label: event.date },
-                { icon: Clock, label: event.time },
+                { icon: Calendar, label: formatDate(event.eventDate) },
+                { icon: Clock, label: formatTime(event.eventDate) },
                 { icon: MapPin, label: event.location },
-                { icon: Users, label: `${event.attendees.toLocaleString()} / ${event.maxCapacity.toLocaleString()}` },
+                { icon: Users, label: `${event.ticketsSold.toLocaleString()} / ${event.totalTickets.toLocaleString()}` },
               ].map((item) => (
                 <div key={item.label} className="rounded-xl border border-border bg-card p-4">
                   <item.icon className="h-5 w-5 text-primary mb-2" />
@@ -102,7 +222,7 @@ const EventDetail = () => {
               <p className="text-muted-foreground leading-relaxed">{event.description}</p>
               <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
                 <Shield className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground">Attendee data encrypted via FHE · Anti-scalping resale rules enforced</span>
+                <span className="text-sm text-muted-foreground">NFT-based tickets on Arbitrum · Resale protection enabled</span>
               </div>
             </motion.div>
           </div>
@@ -110,53 +230,40 @@ const EventDetail = () => {
           {/* Right: Purchase Panel */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="space-y-4">
             <div className="rounded-xl border border-border bg-card p-6 sticky top-24">
-              <h3 className="font-display text-lg font-semibold text-foreground mb-4">Select Ticket</h3>
+              <h3 className="font-display text-lg font-semibold text-foreground mb-4">Get Tickets</h3>
 
-              {/* Tier selection */}
-              <div className="space-y-3 mb-6">
-                {event.tiers.map((t, i) => (
-                  <button
-                    key={t.name}
-                    onClick={() => setSelectedTier(i)}
-                    className={`w-full text-left rounded-xl border p-4 transition-all ${
-                      selectedTier === i
-                        ? "border-primary bg-primary/5 shadow-copper"
-                        : "border-border bg-card hover:border-copper/30"
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-display font-semibold text-foreground">{t.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{t.available} of {t.total} left</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-display font-bold text-primary">{t.price}</p>
-                        <p className="text-xs text-muted-foreground">{t.priceUsd}</p>
-                      </div>
-                    </div>
-                    {selectedTier === i && (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="mt-3 pt-3 border-t border-border">
-                        <ul className="space-y-1">
-                          {t.perks.map((perk) => (
-                            <li key={perk} className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Ticket className="h-3 w-3 text-primary" />
-                              {perk}
-                            </li>
-                          ))}
-                        </ul>
-                      </motion.div>
-                    )}
-                  </button>
-                ))}
+              {/* Ticket Type */}
+              <div className="rounded-xl border border-primary bg-primary/5 p-4 mb-6">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-display font-semibold text-foreground">General Admission</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{availableTickets.toLocaleString()} of {event.totalTickets.toLocaleString()} left</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-display font-bold text-primary">{pricePerTicket}</p>
+                  </div>
+                </div>
               </div>
 
               {/* Quantity */}
               <div className="flex items-center justify-between mb-6">
                 <span className="text-sm text-muted-foreground">Quantity</span>
                 <div className="flex items-center gap-3">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="h-8 w-8 rounded-lg border border-border bg-muted flex items-center justify-center text-foreground hover:bg-secondary">−</button>
+                  <button 
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))} 
+                    disabled={quantity <= 1}
+                    className="h-8 w-8 rounded-lg border border-border bg-muted flex items-center justify-center text-foreground hover:bg-secondary disabled:opacity-50"
+                  >
+                    −
+                  </button>
                   <span className="font-display font-semibold text-foreground w-6 text-center">{quantity}</span>
-                  <button onClick={() => setQuantity(Math.min(4, quantity + 1))} className="h-8 w-8 rounded-lg border border-border bg-muted flex items-center justify-center text-foreground hover:bg-secondary">+</button>
+                  <button 
+                    onClick={() => setQuantity(Math.min(4, quantity + 1))} 
+                    disabled={quantity >= 4 || quantity >= availableTickets}
+                    className="h-8 w-8 rounded-lg border border-border bg-muted flex items-center justify-center text-foreground hover:bg-secondary disabled:opacity-50"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
 
@@ -164,16 +271,35 @@ const EventDetail = () => {
               <div className="flex justify-between items-center mb-4 pb-4 border-b border-border">
                 <span className="text-muted-foreground">Total</span>
                 <span className="font-display text-xl font-bold text-foreground">
-                  {(parseFloat(tier.price) * quantity).toFixed(2)} ETH
+                  {totalPrice} ETH
                 </span>
               </div>
 
               <Button
-                onClick={() => setShowTracker(true)}
+                onClick={handleBuyTicket}
+                disabled={!isConnected || isMinting || availableTickets === 0 || !event.isActive}
                 className="w-full bg-gradient-copper text-primary-foreground hover:opacity-90 shadow-copper py-6 text-base font-display font-semibold gap-2"
               >
-                <Ticket className="h-5 w-5" />
-                Mint {quantity > 1 ? `${quantity} Tickets` : "Ticket"}
+                {isMinting ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : !isConnected ? (
+                  <>
+                    <Lock className="h-5 w-5" />
+                    Connect Wallet
+                  </>
+                ) : availableTickets === 0 ? (
+                  "Sold Out"
+                ) : !event.isActive ? (
+                  "Sales Closed"
+                ) : (
+                  <>
+                    <Ticket className="h-5 w-5" />
+                    Mint {quantity > 1 ? `${quantity} Tickets` : "Ticket"}
+                  </>
+                )}
               </Button>
 
               <div className="flex gap-2 mt-3">
