@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { useAccount, useDisconnect, useSwitchAccount } from 'wagmi';
+import { useAccount, useDisconnect } from 'wagmi';
 import { toast } from 'sonner';
 
 interface WalletState {
@@ -11,15 +11,14 @@ interface WalletState {
   connectWallet: () => Promise<void>;
   disconnectWallet: () => Promise<void>;
   switchNetwork: (chainId: number) => Promise<void>;
-  linkedAccounts: { address: string; type: string }[];
-  switchAccount: (address: string) => Promise<void>;
+  linkedAccounts: { address: string; type: string; walletClientType: string }[];
+  switchAccount: (address: string, walletClientType: string) => Promise<void>;
 }
 
 export function useWallet(): WalletState {
   const { login, logout, user } = usePrivy();
   const { address, chainId, isConnected: wagmiConnected } = useAccount();
   const { disconnect: wagmiDisconnect } = useDisconnect();
-  const { switchAccount: wagmiSwitchAccount } = useSwitchAccount();
   
   const [isReady, setIsReady] = useState(false);
 
@@ -60,12 +59,17 @@ export function useWallet(): WalletState {
     }
   };
 
-  const switchToAccount = async (targetAddress: string) => {
+  const switchAccount = async (targetAddress: string) => {
     try {
-      await wagmiSwitchAccount({ connector: undefined });
-      toast.success('Switched account');
+      await logout();
+      wagmiDisconnect();
+      setTimeout(async () => {
+        await login();
+        toast.success('Switched account');
+      }, 100);
     } catch (error) {
       console.error('Failed to switch account:', error);
+      toast.error('Failed to switch account');
     }
   };
 
@@ -73,13 +77,14 @@ export function useWallet(): WalletState {
   const walletAddress = privyAddress || address || null;
   const isConnected = !!(privyAddress || wagmiConnected);
 
-  const linkedAccounts: { address: string; type: string }[] = [];
+  const linkedAccounts: { address: string; type: string; walletClientType: string }[] = [];
   if (user?.linkedAccounts) {
     for (const account of user.linkedAccounts) {
       if (account.type === 'wallet' && 'address' in account) {
         linkedAccounts.push({
           address: account.address,
           type: account.walletClientType || 'wallet',
+          walletClientType: account.walletClientType || 'wallet',
         });
       }
     }
@@ -94,6 +99,6 @@ export function useWallet(): WalletState {
     disconnectWallet,
     switchNetwork,
     linkedAccounts,
-    switchAccount: switchToAccount,
+    switchAccount,
   };
 }
