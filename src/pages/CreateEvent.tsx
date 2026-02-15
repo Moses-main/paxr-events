@@ -3,7 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Ticket, DollarSign, Clock, Upload, X, Loader2, ArrowRight, Settings } from 'lucide-react';
+import { Calendar, MapPin, Ticket, DollarSign, Clock, Upload, X, Loader2, ArrowRight, Settings, ArrowLeft, Home } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,8 +14,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { uploadToIPFS } from '@/lib/ipfs';
-import { useWallet } from '@/hooks/useWallet';
+import { arbitrumSepolia } from 'wagmi/chains';
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useWallet } from '@/hooks/useWallet';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 
 const eventSchema = z.object({
@@ -59,6 +61,7 @@ const EVENT_ABI = [
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export default function CreateEvent() {
+  const navigate = useNavigate();
   const { address } = useWallet();
   const { writeContractAsync } = useWriteContract();
   const [isLoading, setIsLoading] = useState(false);
@@ -137,6 +140,7 @@ export default function CreateEvent() {
         address: CONTRACT_ADDRESSES.event as `0x${string}`,
         abi: EVENT_ABI,
         functionName: 'createEvent',
+        chain: arbitrumSepolia,
         args: [
           data.name,
           data.description,
@@ -152,13 +156,13 @@ export default function CreateEvent() {
           maxResalePriceWei,
           groupBuyDiscountBps,
         ],
-      });
+      } as any);
 
       setTxHash(tx);
       toast.success('Event created! Transaction submitted.');
       
       if (tx) {
-        toast.message('Transaction Hash:', tx);
+        toast.message('Transaction Hash', { description: tx });
       }
     } catch (error) {
       console.error('Failed to create event:', error);
@@ -182,6 +186,24 @@ export default function CreateEvent() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-4xl mx-auto"
         >
+          <div className="flex items-center gap-4 mb-8">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back
+            </button>
+            <div className="h-6 w-px bg-muted-foreground/30" />
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Home className="w-5 h-5" />
+              Home
+            </button>
+          </div>
+
           <div className="mb-8">
             <h1 className="font-display text-4xl font-bold text-foreground">Create Event</h1>
             <p className="text-muted-foreground mt-2">
