@@ -1,18 +1,21 @@
 import { useWallet } from '@/hooks/useWallet';
 import { Button } from '@/components/ui/button';
-import { Wallet, ChevronDown, LogOut, Copy, ExternalLink } from 'lucide-react';
+import { Wallet, ChevronDown, LogOut, Copy, ExternalLink, Users } from 'lucide-react';
 import { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
 export function ConnectWallet() {
-  const { isConnected, address, connectWallet, disconnectWallet, chainId } = useWallet();
+  const { isConnected, address, connectWallet, disconnectWallet, chainId, linkedAccounts, switchAccount } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
 
   const formatAddress = (addr: string) => {
@@ -42,6 +45,10 @@ export function ConnectWallet() {
     toast.success('Wallet disconnected');
   };
 
+  const handleSwitchAccount = async (newAddress: string) => {
+    await switchAccount(newAddress);
+  };
+
   if (!isConnected) {
     return (
       <Button
@@ -55,6 +62,8 @@ export function ConnectWallet() {
       </Button>
     );
   }
+
+  const allAccounts = linkedAccounts.length > 0 ? linkedAccounts : (address ? [{ address, type: 'connected' }] : []);
 
   return (
     <DropdownMenu>
@@ -79,7 +88,35 @@ export function ConnectWallet() {
             </div>
           )}
         </div>
-        <DropdownMenuSeparator />
+        
+        {linkedAccounts.length > 1 && (
+          <>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="cursor-pointer">
+                <Users className="w-4 h-4 mr-2" />
+                Switch Account
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {linkedAccounts.map((account) => (
+                  <DropdownMenuItem
+                    key={account.address}
+                    onClick={() => handleSwitchAccount(account.address)}
+                    className={`cursor-pointer ${account.address === address ? 'bg-primary/10' : ''}`}
+                  >
+                    <span className={account.address === address ? 'font-bold' : ''}>
+                      {formatAddress(account.address)}
+                    </span>
+                    <span className="ml-auto text-xs text-muted-foreground capitalize">
+                      {account.type}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        
         <DropdownMenuItem onClick={copyAddress} className="cursor-pointer">
           <Copy className="w-4 h-4 mr-2" />
           Copy Address

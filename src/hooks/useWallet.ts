@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useAccount, useDisconnect, useSwitchAccount } from 'wagmi';
 import { toast } from 'sonner';
 
 interface WalletState {
@@ -11,12 +11,15 @@ interface WalletState {
   connectWallet: () => Promise<void>;
   disconnectWallet: () => Promise<void>;
   switchNetwork: (chainId: number) => Promise<void>;
+  linkedAccounts: { address: string; type: string }[];
+  switchAccount: (address: string) => Promise<void>;
 }
 
 export function useWallet(): WalletState {
   const { login, logout, user } = usePrivy();
   const { address, chainId, isConnected: wagmiConnected } = useAccount();
   const { disconnect: wagmiDisconnect } = useDisconnect();
+  const { switchAccount: wagmiSwitchAccount } = useSwitchAccount();
   
   const [isReady, setIsReady] = useState(false);
 
@@ -57,9 +60,30 @@ export function useWallet(): WalletState {
     }
   };
 
+  const switchToAccount = async (targetAddress: string) => {
+    try {
+      await wagmiSwitchAccount({ connector: undefined });
+      toast.success('Switched account');
+    } catch (error) {
+      console.error('Failed to switch account:', error);
+    }
+  };
+
   const privyAddress = user?.wallet?.address;
   const walletAddress = privyAddress || address || null;
   const isConnected = !!(privyAddress || wagmiConnected);
+
+  const linkedAccounts: { address: string; type: string }[] = [];
+  if (user?.linkedAccounts) {
+    for (const account of user.linkedAccounts) {
+      if (account.type === 'wallet' && 'address' in account) {
+        linkedAccounts.push({
+          address: account.address,
+          type: account.walletClientType || 'wallet',
+        });
+      }
+    }
+  }
 
   return {
     isConnected,
@@ -69,5 +93,7 @@ export function useWallet(): WalletState {
     connectWallet,
     disconnectWallet,
     switchNetwork,
+    linkedAccounts,
+    switchAccount: switchToAccount,
   };
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import {
   Ticket, ArrowLeftRight, Globe, BadgeCheck, QrCode,
   Calendar, MapPin, Shield, Loader2, Send, ExternalLink,
