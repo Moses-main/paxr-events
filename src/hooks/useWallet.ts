@@ -12,8 +12,15 @@ interface WalletState {
   disconnectWallet: () => Promise<void>;
   switchNetwork: (chainId: number) => Promise<void>;
   linkedAccounts: { address: string; type: string; walletClientType: string }[];
-  switchAccount: (address: string, walletClientType: string) => Promise<void>;
+  switchAccount: () => Promise<void>;
 }
+
+const SUPPORTED_CHAINS = [
+  { id: 42161, name: 'Arbitrum One' },
+  { id: 421614, name: 'Arbitrum Sepolia' },
+  { id: 1, name: 'Ethereum' },
+  { id: 137, name: 'Polygon' },
+];
 
 export function useWallet(): WalletState {
   const { login, logout, user } = usePrivy();
@@ -52,6 +59,7 @@ export function useWallet(): WalletState {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: `0x${targetChainId.toString(16)}` }],
         });
+        toast.success('Network switched');
       }
     } catch (error) {
       console.error('Failed to switch network:', error);
@@ -59,14 +67,12 @@ export function useWallet(): WalletState {
     }
   };
 
-  const switchAccount = async (targetAddress: string) => {
+  const switchAccount = async () => {
     try {
       await logout();
-      wagmiDisconnect();
       setTimeout(async () => {
         await login();
-        toast.success('Switched account');
-      }, 100);
+      }, 200);
     } catch (error) {
       console.error('Failed to switch account:', error);
       toast.error('Failed to switch account');
@@ -93,7 +99,7 @@ export function useWallet(): WalletState {
   return {
     isConnected,
     address: walletAddress,
-    chainId: chainId || null,
+    chainId: chainId ? Number(chainId) : null,
     isReady,
     connectWallet,
     disconnectWallet,
@@ -102,3 +108,5 @@ export function useWallet(): WalletState {
     switchAccount,
   };
 }
+
+export { SUPPORTED_CHAINS };
