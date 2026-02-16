@@ -12,10 +12,11 @@
 - [ ] Smart contract audit (external)
 - [ ] Deploy to Arbitrum mainnet
 
-## Deployed Contracts (Arbitrum Sepolia)
-- PaxrEvent: `0xc9497Ec40951FbB98C02c666b7F9Fa143678E2Be`
-- PaxrTicket: `0x84b9F7f2243a25A1539e25C3E14c097cc2b3F4e6`
-- PaxrMarketplace: `0x802A6843516f52144b3F1D04E5447A085d34aF37`
+## Deployed Contracts (Arbitrum Sepolia) - Updated Feb 16, 2026
+- PaxrEvent: `0xc880af5d5ac3ea27c26c47d132661a710c245ea5`
+- PaxrTicket: `0xcbf17d67bd0ee803e68dff35fa8e675aa3abad47`
+- PaxrMarketplace: `0x62f0be8a94f7e348f15f6f373e35ae5c34f7d40f`
+- **Platform Fee: 7%**
 
 ## Phase 2: Frontend Foundation ✅ COMPLETE
 - [x] Set up Vite + React

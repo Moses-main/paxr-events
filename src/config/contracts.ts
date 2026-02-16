@@ -11,9 +11,9 @@ export const config = createConfig({
 })
 
 export const CONTRACT_ADDRESSES = {
-  event: import.meta.env.VITE_PAXR_EVENT_ADDRESS || '0xc9497Ec40951FbB98C02c666b7F9Fa143678E2Be',
-  ticket: import.meta.env.VITE_PAXR_TICKET_ADDRESS || '0x84b9F7f2243a25A1539e25C3E14c097cc2b3F4e6',
-  marketplace: import.meta.env.VITE_PAXR_MARKETPLACE_ADDRESS || '0x802A6843516f52144b3F1D04E5447A085d34aF37',
+  event: import.meta.env.VITE_PAXR_EVENT_ADDRESS || '0xc880af5d5ac3ea27c26c47d132661a710c245ea5',
+  ticket: import.meta.env.VITE_PAXR_TICKET_ADDRESS || '0xcbf17d67bd0ee803e68dff35fa8e675aa3abad47',
+  marketplace: import.meta.env.VITE_PAXR_MARKETPLACE_ADDRESS || '0x62f0be8a94f7e348f15f6f373e35ae5c34f7d40f',
 }
 
 export const CHAIN_ID = import.meta.env.DEV ? arbitrumSepolia.id : arbitrum.id
