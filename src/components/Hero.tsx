@@ -57,9 +57,9 @@ const Hero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.35 }}
-          className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6"
+          className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6 tracking-tight"
         >
-          The Future of
+          <span className="text-white">The Future of</span>
           <br />
           <span className="text-gradient-copper">Event Ticketing</span>
         </motion.h1>

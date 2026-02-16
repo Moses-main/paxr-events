@@ -177,26 +177,45 @@ npm run build
 
 ## Roadmap
 
-### Phase 5: Privacy & Cross-Chain
-- [ ] Fhenix integration for encrypted attendee data
-- [x] Anonymous RSVP system
-- [ ] LayerZero cross-chain ticket bridging
-- [x] Group buy functionality
+For a detailed timeline and feature breakdown, see [ROADMAP.md](./ROADMAP.md).
 
-### Phase 6: Social Features
-- [x] Fan communities section
-- [x] Referral system
-- [x] Shareable attendance proofs
+### Quick Overview
 
-### Phase 7: Analytics & Dashboard
-- [x] Dune Analytics integration
-- [x] Organizer dashboard
-- [x] Payment analytics
+| Quarter | Focus |
+|---------|-------|
+| Q1 2026 | Mainnet Launch, Core Features |
+| Q2 2026 | Growth, Referral System, Mobile |
+| Q3 2026 | Privacy (Fhenix), Cross-Chain |
+| Q4 2026 | PAXR Token, DAO, Rewards |
+| 2027 | Enterprise, White-Label, API |
+| 2028 | Mobile Apps, Global Scale |
 
-### Phase 8: Testing & Deployment
-- [ ] Unit tests
-- [ ] Mainnet deployment
-- [ ] Production setup
+### Detailed Milestones
+
+**2026**
+- ✅ Foundation: Smart contracts deployed on Arbitrum Sepolia
+- ✅ NFT Ticketing, Anti-Scalping, Group Buy
+- ✅ Frontend MVP complete
+- 🔄 Testing & Audits
+- ⏳ Mainnet Launch
+
+**2027**
+- White-Label Platform
+- Enterprise Contracts
+- Public API
+
+**2028**
+- Native Mobile Apps
+- Global Payments (50+ countries)
+- Metaverse Integration
+
+### Success Metrics
+
+| Metric | 2026 | 2027 | 2028 |
+|--------|------|------|------|
+| Events | 500 | 5,000 | 50,000 |
+| Users | 1,000 | 50,000 | 1M |
+| Revenue | $50K | $2M | $20M |
 
 ## License
 
