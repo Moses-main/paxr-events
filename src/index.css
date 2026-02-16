@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Allura&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -51,7 +51,7 @@
     --shadow-copper: 0 4px 30px -5px hsl(28 80% 52% / 0.25);
     --shadow-elevated: 0 8px 40px -10px hsl(0 0% 0% / 0.5);
 
-    --font-display: 'Space Grotesk', sans-serif;
+    --font-display: 'Allura', cursive;
     --font-body: 'Inter', sans-serif;
 
     --sidebar-background: 220 18% 10%;
