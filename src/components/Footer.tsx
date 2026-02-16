@@ -7,10 +7,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <div className="h-8 w-8 rounded-lg bg-gradient-copper flex items-center justify-center">
-                <span className="font-display font-bold text-primary-foreground text-sm">P</span>
-              </div>
-              <span className="font-display text-xl font-bold text-foreground">Paxr</span>
+              <img src="/Paxr_generic.png" alt="Paxr" className="h-10 w-10 rounded-lg object-cover" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Decentralized, privacy-first event ticketing on Arbitrum Orbit.

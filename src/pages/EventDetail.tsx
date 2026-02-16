@@ -307,7 +307,23 @@ const EventDetail = () => {
                   <Heart className={`h-4 w-4 ${liked ? "fill-primary text-primary" : ""}`} />
                   {liked ? "Saved" : "Save"}
                 </Button>
-                <Button variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-2">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 border-border text-muted-foreground hover:text-foreground gap-2"
+                  onClick={() => {
+                    const shareUrl = window.location.href;
+                    if (navigator.share) {
+                      navigator.share({
+                        title: event.name,
+                        text: `Check out this event: ${event.name}`,
+                        url: shareUrl,
+                      });
+                    } else {
+                      navigator.clipboard.writeText(shareUrl);
+                      toast.success("Link copied to clipboard!");
+                    }
+                  }}
+                >
                   <Share2 className="h-4 w-4" /> Share
                 </Button>
               </div>
