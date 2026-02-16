@@ -121,20 +121,59 @@ npm run build
 
 | Route | Description |
 |-------|-------------|
-| `/` | Homepage with featured events |
+| `/` | Homepage with featured events & CTA |
+| `/how-it-works` | How it works guide page |
 | `/marketplace` | Browse all events |
 | `/event/:id` | Event details & ticket purchase |
 | `/create` | Create new event (organizer) |
 | `/my-tickets` | View owned NFT tickets |
-| `/communities` | Fan communities |
+| `/communities` | Fan communities (real event data) |
+| `/community/:id` | Community details |
 | `/dashboard` | Organizer dashboard & analytics |
 
-## Supported Networks
+## Completed Features
 
-- **Arbitrum One** (Mainnet)
-- **Arbitrum Sepolia** (Testnet)
-- **Ethereum** (Mainnet)
-- **Polygon** (Mainnet)
+### Core
+- [x] NFT Ticketing with ERC-721
+- [x] Anti-scalping resale caps
+- [x] Group buy functionality
+- [x] Multi-chain wallet connection (Privy)
+- [x] Real-time contract data (Alchemy)
+- [x] IPFS image uploads
+
+### Pages & UI
+- [x] Homepage with featured events (from contract)
+- [x] Create Event button with attractive rounded design
+- [x] How It Works guide page
+- [x] Marketplace with all events
+- [x] Event Detail page with live data
+- [x] My Tickets page
+- [x] Communities page (now uses real event data)
+- [x] Community Detail page
+- [x] Organizer Dashboard with analytics
+
+### Social & Privacy
+- [x] Anonymous RSVP
+- [x] Referral system
+- [x] Attendance proofs
+- [x] Fan communities
+
+### Analytics
+- [x] Dune Analytics integration
+- [x] Payment analytics
+
+## Remaining Tasks
+
+### Testing & Deployment
+- [ ] Unit tests for smart contracts
+- [ ] Integration tests for frontend
+- [ ] Mainnet deployment
+- [ ] Production optimization (code splitting)
+
+### Future Enhancements
+- [ ] Fhenix encrypted attendee data
+- [ ] LayerZero cross-chain bridging
+- [ ] Mobile app
 
 ## Roadmap
 
