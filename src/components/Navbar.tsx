@@ -8,6 +8,7 @@ const navItems = [
   { label: "Events", href: "/#events" },
   { label: "Marketplace", href: "/marketplace" },
   { label: "Communities", href: "/communities" },
+  { label: "Dashboard", href: "/dashboard" },
   { label: "My Tickets", href: "/my-tickets" },
   { label: "How It Works", href: "/#how-it-works" },
 ];

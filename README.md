@@ -126,6 +126,8 @@ npm run build
 | `/event/:id` | Event details & ticket purchase |
 | `/create` | Create new event (organizer) |
 | `/my-tickets` | View owned NFT tickets |
+| `/communities` | Fan communities |
+| `/dashboard` | Organizer dashboard & analytics |
 
 ## Supported Networks
 
@@ -138,19 +140,19 @@ npm run build
 
 ### Phase 5: Privacy & Cross-Chain
 - [ ] Fhenix integration for encrypted attendee data
-- [ ] Anonymous RSVP system
+- [x] Anonymous RSVP system
 - [ ] LayerZero cross-chain ticket bridging
-- [ ] Group buy functionality
+- [x] Group buy functionality
 
 ### Phase 6: Social Features
-- [ ] Fan communities section
-- [ ] Referral system
-- [ ] Shareable attendance proofs
+- [x] Fan communities section
+- [x] Referral system
+- [x] Shareable attendance proofs
 
 ### Phase 7: Analytics & Dashboard
-- [ ] Dune Analytics integration
-- [ ] Organizer dashboard
-- [ ] Payment analytics
+- [x] Dune Analytics integration
+- [x] Organizer dashboard
+- [x] Payment analytics
 
 ### Phase 8: Testing & Deployment
 - [ ] Unit tests
