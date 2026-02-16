@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AttendanceProof from "@/components/AttendanceProof";
 import { useWallet } from "@/hooks/useWallet";
 import { getUserTickets, getTicketData, getEvent, getListing } from "@/lib/alchemy";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
@@ -80,6 +81,7 @@ const MyTickets = () => {
   const [showQR, setShowQR] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
   const [showResell, setShowResell] = useState(false);
+  const [showAttendanceProof, setShowAttendanceProof] = useState(false);
   const [transferAddress, setTransferAddress] = useState("");
   const [resellPrice, setResellPrice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -252,7 +254,7 @@ const MyTickets = () => {
             </>
           ) : (
             <>
-              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs">
+              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs" onClick={() => { setSelectedTicket(ticket); setShowAttendanceProof(true); }}>
                 <BadgeCheck className="h-3.5 w-3.5" /> Proof
               </Button>
               <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs">
@@ -366,6 +368,21 @@ const MyTickets = () => {
               </>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showAttendanceProof} onOpenChange={setShowAttendanceProof}>
+        <DialogContent className="max-w-md">
+          {selectedTicket && (
+            <AttendanceProof
+              eventId={selectedTicket.eventId}
+              eventName={selectedTicket.eventName}
+              eventDate={Math.floor(new Date(selectedTicket.eventDate).getTime() / 1000)}
+              eventLocation={selectedTicket.location}
+              ticketId={selectedTicket.tokenId}
+              tokenId={selectedTicket.tokenId}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
