@@ -8,7 +8,8 @@
 - [x] Add anti-fraud & anti-scalping rules
 - [x] Implement resale marketplace contract
 - [x] Deploy to Arbitrum Sepolia testnet
-- [ ] Write unit tests for contracts
+- [x] Write unit tests for contracts (31 passing)
+- [ ] Smart contract audit (external)
 - [ ] Deploy to Arbitrum mainnet
 
 ## Deployed Contracts (Arbitrum Sepolia)
@@ -19,7 +20,7 @@
 ## Phase 2: Frontend Foundation ✅ COMPLETE
 - [x] Set up Vite + React
 - [x] Integrate Privy wallet connection
-- [x] Create global layout with Copperx-inspired design
+- [x] Create global layout
 - [x] Build wallet connection modal
 - [x] Implement transaction status tracker component
 - [x] Set up Wagmi/viem for contract interactions
@@ -62,7 +63,7 @@
 - [x] Add event demand metrics
 
 ## Phase 8: Testing & Deployment 🔄 IN PROGRESS
-- [ ] Run comprehensive test suite
+- [x] Run comprehensive test suite (31 tests passing)
 - [ ] Audit smart contracts
 - [x] Set up IPFS pinning service (basic)
 - [ ] Configure production environment
@@ -70,12 +71,22 @@
 
 ---
 
+## Fiat On-Ramp Integration (Environment Variables)
+
+Added to `.env.example`:
+- `ALCHEMY_PAY_APP_ID`, `ALCHEMY_PAY_API_KEY` - Alchemy Pay
+- `TRANSAK_API_KEY`, `TRANSAK_API_SECRET` - Transak
+- `MOONPAY_PUBLIC_KEY`, `MOONPAY_SECRET_KEY` - MoonPay
+- `COINBASE_PAY_CLIENT_ID`, `COINBASE_PAY_CLIENT_SECRET` - Coinbase Pay
+
+---
+
 ## What's Remaining
 
 ### High Priority
-1. **Unit tests for smart contracts** - Write comprehensive tests
-2. **Smart contract audit** - Security review before mainnet
-3. **Mainnet deployment** - Deploy contracts to Arbitrum One
+1. **Smart contract audit** - Security review before mainnet (external)
+2. **Mainnet deployment** - Deploy contracts to Arbitrum One
+3. **Production environment** - Configure production build
 
 ### Medium Priority
 4. **Fhenix encryption** - Encrypted attendee data
@@ -83,6 +94,5 @@
 6. **Production optimization** - Code splitting, performance
 
 ### Nice to Have
-7. **Mobile app** - iOS/Android native apps
-8. **Fiat on-ramp** - Credit card payments
-9. **Dynamic pricing** - AI-powered pricing
+7. **Fiat on-ramp integration** - Using the env vars added
+8. **Dynamic pricing** - AI-powered pricing
