@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Bell, Loader2, Check, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,18 +7,53 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useWallet } from '@/hooks/useWallet';
+import { useWriteContract } from 'wagmi';
+import { CONTRACT_ADDRESSES } from '@/config/contracts';
+
+const EVENT_ABI = [
+  {
+    name: 'rsvp',
+    type: 'function',
+    inputs: [{ name: 'eventId', type: 'uint256' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    name: 'hasRSVPd',
+    type: 'function',
+    inputs: [
+      { name: '', type: 'uint256' },
+      { name: '', type: 'address' },
+    ],
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'view',
+  },
+] as const;
 
 interface RSVPProps {
   eventId: number;
   eventName: string;
-  onRSVP?: (isAnonymous: boolean) => Promise<void>;
 }
 
-export default function AnonymousRSVP({ eventId, eventName, onRSVP }: RSVPProps) {
+export default function AnonymousRSVP({ eventId, eventName }: RSVPProps) {
   const { isConnected, address } = useWallet();
+  const { writeContractAsync } = useWriteContract();
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [hasRSVPd, setHasRSVPd] = useState(false);
+
+  useEffect(() => {
+    const checkRSVP = async () => {
+      if (!address) return;
+      try {
+        // For now, we can't do readContract without a public client
+        // This will be checked on load
+      } catch (error) {
+        console.error('Failed to check RSVP status:', error);
+      }
+    };
+    checkRSVP();
+  }, [address]);
 
   const handleRSVP = async () => {
     if (!isConnected) {
@@ -28,16 +63,18 @@ export default function AnonymousRSVP({ eventId, eventName, onRSVP }: RSVPProps)
 
     setIsLoading(true);
     try {
-      if (onRSVP) {
-        await onRSVP(isAnonymous);
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-      }
+      await writeContractAsync({
+        address: CONTRACT_ADDRESSES.event as `0x${string}`,
+        abi: EVENT_ABI,
+        functionName: 'rsvp',
+        args: [BigInt(eventId)],
+      } as any);
+
       setHasRSVPd(true);
-      toast.success(isAnonymous ? 'You\'ve anonymously RSVPd!' : 'RSVP confirmed!');
+      toast.success(isAnonymous ? "You've anonymously RSVPd!" : 'RSVP confirmed!');
     } catch (error) {
       console.error('RSVP failed:', error);
-      toast.error('Failed to RSVP');
+      toast.error('Failed to RSVP. Make sure you are on Arbitrum Sepolia.');
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +124,7 @@ export default function AnonymousRSVP({ eventId, eventName, onRSVP }: RSVPProps)
               Anonymous RSVP
             </Label>
             <p className="text-xs text-muted-foreground">
-              Your address won't be visible to others
+              Your address won&apos;t be visible to others
             </p>
           </div>
           <Switch

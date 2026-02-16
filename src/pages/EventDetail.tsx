@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TransactionTracker from "@/components/TransactionTracker";
+import AnonymousRSVP from "@/components/AnonymousRSVP";
 import { getEvent, EventData } from "@/lib/alchemy";
 import { useWallet } from "@/hooks/useWallet";
 import { useWriteContract } from "wagmi";
@@ -224,6 +225,10 @@ const EventDetail = () => {
                 <Shield className="h-4 w-4 text-primary" />
                 <span className="text-sm text-muted-foreground">NFT-based tickets on Arbitrum · Resale protection enabled</span>
               </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+              <AnonymousRSVP eventId={event.eventId} eventName={event.name} />
             </motion.div>
           </div>
 
