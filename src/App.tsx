@@ -10,6 +10,7 @@ import MyTickets from "./pages/MyTickets";
 import CreateEvent from "./pages/CreateEvent";
 import Communities from "./pages/Communities";
 import OrganizerDashboard from "./pages/OrganizerDashboard";
+import HowItWorksPage from "./pages/HowItWorksPage";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/my-tickets" element={<MyTickets />} />
           <Route path="/communities" element={<Communities />} />
           <Route path="/dashboard" element={<OrganizerDashboard />} />
+          <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
