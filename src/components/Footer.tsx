@@ -1,4 +1,5 @@
 import { Github, Twitter } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -7,10 +8,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <div className="h-8 w-8 rounded-lg bg-gradient-copper flex items-center justify-center">
-                <span className="font-display font-bold text-primary-foreground text-sm">P</span>
-              </div>
-              <span className="font-display text-xl font-bold text-foreground">Paxr</span>
+              <img src="/Paxr_generic.png" alt="Paxr" className="h-10 w-10 rounded-lg object-cover" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Decentralized, privacy-first event ticketing on Arbitrum Orbit.
@@ -26,18 +24,30 @@ const Footer = () => {
           </div>
 
           {[
-            { title: "Product", links: ["Events", "Organizers", "Pricing", "Docs"] },
-            { title: "Company", links: ["About", "Blog", "Careers", "Press"] },
-            { title: "Legal", links: ["Privacy", "Terms", "Cookies"] },
+            { title: "Product", links: [
+              { name: "Events", path: "/marketplace" },
+              { name: "Organizers", path: "/dashboard" },
+              { name: "How It Works", path: "/how-it-works" },
+            ]},
+            { title: "Company", links: [
+              { name: "About", path: "/" },
+              { name: "Blog", path: "/" },
+              { name: "Careers", path: "/" },
+            ]},
+            { title: "Legal", links: [
+              { name: "Privacy Policy", path: "/legal" },
+              { name: "Terms of Service", path: "/legal" },
+              { name: "Cookies", path: "/" },
+            ]},
           ].map((col) => (
             <div key={col.title}>
               <h4 className="font-display font-semibold text-foreground mb-4">{col.title}</h4>
               <ul className="space-y-2">
                 {col.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      {link}
-                    </a>
+                  <li key={link.name}>
+                    <Link to={link.path} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {link.name}
+                    </Link>
                   </li>
                 ))}
               </ul>

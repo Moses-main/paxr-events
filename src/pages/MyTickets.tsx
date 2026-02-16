@@ -1,97 +1,229 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   Ticket, ArrowLeftRight, Globe, BadgeCheck, QrCode,
-  Calendar, MapPin, MoreVertical, Shield,
+  Calendar, MapPin, Shield, Loader2, Send, ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AttendanceProof from "@/components/AttendanceProof";
+import { useWallet } from "@/hooks/useWallet";
+import { getUserTickets, getTicketData, getEvent, getListing } from "@/lib/alchemy";
+import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { toast } from "sonner";
+import { CONTRACT_ADDRESSES } from "@/config/contracts";
 
-const myTickets = [
+interface TicketNFT {
+  tokenId: number;
+  eventId: number;
+  eventName: string;
+  eventDate: string;
+  location: string;
+  imageURI: string;
+  purchasePrice: string;
+  purchaseTime: number;
+  isUsed: boolean;
+  tier: string;
+  status: "active" | "attended";
+  chain: string;
+}
+
+const TICKET_ABI = [
   {
-    id: "NFT-0x8a7f-001",
-    eventTitle: "Neon Horizons Festival",
-    date: "Mar 15, 2026",
-    location: "Miami, FL",
-    tier: "VIP",
-    status: "active",
-    image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=250&fit=crop",
-    chain: "Arbitrum Orbit",
-    tokenId: "#1247",
+    name: 'transferFrom',
+    type: 'function',
+    inputs: [
+      { name: 'from', type: 'address' },
+      { name: 'to', type: 'address' },
+      { name: 'tokenId', type: 'uint256' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+] as const;
+
+const MARKETPLACE_ABI = [
+  {
+    name: 'listTicket',
+    type: 'function',
+    inputs: [
+      { name: 'tokenId', type: 'uint256' },
+      { name: 'price', type: 'uint256' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
   },
   {
-    id: "NFT-0xb4c2-002",
-    eventTitle: "Web3 Builder Summit",
-    date: "Apr 2, 2026",
-    location: "Berlin, DE",
-    tier: "General",
-    status: "active",
-    image: "https://images.unsplash.com/photo-1540575467063-178a50da2db7?w=400&h=250&fit=crop",
-    chain: "Arbitrum Orbit",
-    tokenId: "#582",
+    name: 'cancelListing',
+    type: 'function',
+    inputs: [
+      { name: 'tokenId', type: 'uint256' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
   },
-  {
-    id: "NFT-0x1d9e-003",
-    eventTitle: "DeFi Conference 2025",
-    date: "Dec 10, 2025",
-    location: "Lisbon, PT",
-    tier: "Backstage",
-    status: "attended",
-    image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=250&fit=crop",
-    chain: "Ethereum",
-    tokenId: "#89",
-    poap: true,
-  },
-  {
-    id: "NFT-0xf2a7-004",
-    eventTitle: "Crypto Art Basel",
-    date: "Nov 5, 2025",
-    location: "Basel, CH",
-    tier: "General",
-    status: "attended",
-    image: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=400&h=250&fit=crop",
-    chain: "Polygon",
-    tokenId: "#3301",
-    poap: true,
-  },
-];
+] as const;
 
 const MyTickets = () => {
-  const activeTickets = myTickets.filter((t) => t.status === "active");
-  const pastTickets = myTickets.filter((t) => t.status === "attended");
+  const { address, isConnected } = useWallet();
+  const { writeContractAsync } = useWriteContract();
+  
+  const [tickets, setTickets] = useState<TicketNFT[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedTicket, setSelectedTicket] = useState<TicketNFT | null>(null);
+  const [showQR, setShowQR] = useState(false);
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [showResell, setShowResell] = useState(false);
+  const [showAttendanceProof, setShowAttendanceProof] = useState(false);
+  const [transferAddress, setTransferAddress] = useState("");
+  const [resellPrice, setResellPrice] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [maxResalePrice, setMaxResalePrice] = useState<string>("0");
 
-  const TicketCard = ({ ticket }: { ticket: typeof myTickets[0] }) => (
+  useEffect(() => {
+    if (isConnected && address) {
+      loadTickets();
+    }
+  }, [isConnected, address]);
+
+  const loadTickets = async () => {
+    if (!address) return;
+    setIsLoading(true);
+    try {
+      const tokenIds = await getUserTickets(address);
+      const loadedTickets: TicketNFT[] = [];
+
+      for (const tokenId of tokenIds) {
+        const ticketData = await getTicketData(tokenId);
+        if (ticketData) {
+          const event = await getEvent(ticketData.eventId);
+          if (event) {
+            const eventDate = new Date(event.eventDate * 1000);
+            const now = new Date();
+            const isPast = eventDate < now;
+            
+            loadedTickets.push({
+              tokenId,
+              eventId: ticketData.eventId,
+              eventName: event.name,
+              eventDate: eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              location: event.location,
+              imageURI: event.imageURI || "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=250&fit=crop",
+              purchasePrice: ticketData.purchasePrice,
+              purchaseTime: ticketData.purchaseTime,
+              isUsed: ticketData.isUsed,
+              tier: "General",
+              status: isPast ? "attended" : "active",
+              chain: "Arbitrum Orbit",
+            });
+          }
+        }
+      }
+
+      setTickets(loadedTickets);
+    } catch (error) {
+      console.error("Failed to load tickets:", error);
+      toast.error("Failed to load tickets");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleTransfer = async () => {
+    if (!selectedTicket || !transferAddress) return;
+    setIsSubmitting(true);
+    try {
+      const tx = await writeContractAsync({
+        address: CONTRACT_ADDRESSES.ticket as `0x${string}`,
+        abi: TICKET_ABI,
+        functionName: 'transferFrom',
+        args: [address as `0x${string}`, transferAddress as `0x${string}`, BigInt(selectedTicket.tokenId)],
+      });
+      
+      toast.success("Ticket transferred successfully!");
+      setShowTransfer(false);
+      setTransferAddress("");
+      loadTickets();
+    } catch (error) {
+      console.error("Transfer failed:", error);
+      toast.error("Failed to transfer ticket");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResell = async () => {
+    if (!selectedTicket || !resellPrice) return;
+    setIsSubmitting(true);
+    try {
+      const priceInWei = BigInt(Math.floor(parseFloat(resellPrice) * 1e18));
+      
+      if (maxResalePrice !== "0" && priceInWei > BigInt(maxResalePrice)) {
+        toast.error(`Price cannot exceed maximum resale price of ${parseInt(maxResalePrice) / 1e18} ETH`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const tx = await writeContractAsync({
+        address: CONTRACT_ADDRESSES.marketplace as `0x${string}`,
+        abi: MARKETPLACE_ABI,
+        functionName: 'listTicket',
+        args: [BigInt(selectedTicket.tokenId), priceInWei],
+      });
+      
+      toast.success("Ticket listed for resale!");
+      setShowResell(false);
+      setResellPrice("");
+    } catch (error) {
+      console.error("Resale listing failed:", error);
+      toast.error("Failed to list ticket for resale");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openResellModal = async (ticket: TicketNFT) => {
+    setSelectedTicket(ticket);
+    const event = await getEvent(ticket.eventId);
+    if (event) {
+      setMaxResalePrice(event.maxResalePrice);
+    }
+    setShowResell(true);
+  };
+
+  const activeTickets = tickets.filter((t) => t.status === "active");
+  const pastTickets = tickets.filter((t) => t.status === "attended");
+
+  const TicketCard = ({ ticket }: { ticket: TicketNFT }) => (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       className="rounded-xl border border-border bg-card overflow-hidden group hover:border-copper/30 transition-all"
     >
       <div className="relative h-40 overflow-hidden">
-        <img src={ticket.image} alt={ticket.eventTitle} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        <img src={ticket.imageURI} alt={ticket.eventName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
         <div className="absolute top-3 left-3 flex gap-2">
           <Badge variant="secondary" className="bg-surface-elevated/90 backdrop-blur text-foreground text-xs">{ticket.tier}</Badge>
-          {ticket.poap && (
-            <Badge className="bg-gradient-copper text-primary-foreground text-xs gap-1">
-              <BadgeCheck className="h-3 w-3" /> POAP
-            </Badge>
-          )}
         </div>
         <div className="absolute top-3 right-3">
           <Badge variant="outline" className="border-border/50 bg-card/80 backdrop-blur text-xs text-muted-foreground font-mono">
-            {ticket.tokenId}
+            #{ticket.tokenId}
           </Badge>
         </div>
       </div>
 
       <div className="p-5">
-        <h3 className="font-display font-semibold text-foreground">{ticket.eventTitle}</h3>
+        <h3 className="font-display font-semibold text-foreground">{ticket.eventName}</h3>
         <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {ticket.date}</span>
+          <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {ticket.eventDate}</span>
           <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {ticket.location}</span>
         </div>
 
@@ -110,20 +242,20 @@ const MyTickets = () => {
         <div className="flex gap-2 mt-4 pt-4 border-t border-border">
           {ticket.status === "active" ? (
             <>
-              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs">
-                <QrCode className="h-3.5 w-3.5" /> Show QR
+              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs" onClick={() => { setSelectedTicket(ticket); setShowQR(true); }}>
+                <QrCode className="h-3.5 w-3.5" /> QR
               </Button>
-              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs">
+              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs" onClick={() => { setSelectedTicket(ticket); setShowTransfer(true); }}>
+                <Send className="h-3.5 w-3.5" /> Transfer
+              </Button>
+              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs" onClick={() => openResellModal(ticket)}>
                 <ArrowLeftRight className="h-3.5 w-3.5" /> Resell
-              </Button>
-              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs">
-                <Globe className="h-3.5 w-3.5" /> Bridge
               </Button>
             </>
           ) : (
             <>
-              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs">
-                <BadgeCheck className="h-3.5 w-3.5" /> View Proof
+              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs" onClick={() => { setSelectedTicket(ticket); setShowAttendanceProof(true); }}>
+                <BadgeCheck className="h-3.5 w-3.5" /> Proof
               </Button>
               <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs">
                 <Shield className="h-3.5 w-3.5" /> Share
@@ -147,54 +279,181 @@ const MyTickets = () => {
           <p className="text-muted-foreground mt-2">Your NFT ticket collection and attendance proofs</p>
         </motion.div>
 
-        {/* Stats strip */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-        >
-          {[
-            { label: "Total Tickets", value: myTickets.length, icon: Ticket },
-            { label: "Upcoming", value: activeTickets.length, icon: Calendar },
-            { label: "Events Attended", value: pastTickets.length, icon: BadgeCheck },
-            { label: "POAPs Earned", value: pastTickets.filter((t) => t.poap).length, icon: Shield },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <stat.icon className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="font-display text-xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
-              </div>
-            </div>
-          ))}
-        </motion.div>
-
-        <Tabs defaultValue="active">
-          <TabsList className="bg-muted mb-6">
-            <TabsTrigger value="active">Upcoming ({activeTickets.length})</TabsTrigger>
-            <TabsTrigger value="past">Past ({pastTickets.length})</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="active">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {activeTickets.map((ticket) => (
-                <TicketCard key={ticket.id} ticket={ticket} />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-copper" />
+          </div>
+        ) : !isConnected ? (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground">Connect your wallet to view your tickets</p>
+          </div>
+        ) : tickets.length === 0 ? (
+          <div className="text-center py-20">
+            <Ticket className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground mb-4">You don't have any tickets yet</p>
+            <Button asChild className="bg-copper-500 hover:bg-copper-600">
+              <Link to="/marketplace">Browse Events</Link>
+            </Button>
+          </div>
+        ) : (
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+            >
+              {[
+                { label: "Total Tickets", value: tickets.length, icon: Ticket },
+                { label: "Upcoming", value: activeTickets.length, icon: Calendar },
+                { label: "Events Attended", value: pastTickets.length, icon: BadgeCheck },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <stat.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-display text-xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  </div>
+                </div>
               ))}
-            </div>
-          </TabsContent>
+            </motion.div>
 
-          <TabsContent value="past">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pastTickets.map((ticket) => (
-                <TicketCard key={ticket.id} ticket={ticket} />
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+            <Tabs defaultValue="active">
+              <TabsList className="bg-muted mb-6">
+                <TabsTrigger value="active">Upcoming ({activeTickets.length})</TabsTrigger>
+                <TabsTrigger value="past">Past ({pastTickets.length})</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="active">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {activeTickets.map((ticket) => (
+                    <TicketCard key={ticket.tokenId} ticket={ticket} />
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="past">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {pastTickets.map((ticket) => (
+                    <TicketCard key={ticket.tokenId} ticket={ticket} />
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </>
+        )}
       </div>
+
+      <Dialog open={showQR} onOpenChange={setShowQR}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ticket QR Code</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center py-4">
+            {selectedTicket && (
+              <>
+                <div className="bg-white p-4 rounded-lg mb-4">
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                      `paxr://ticket/${selectedTicket.tokenId}`
+                    )}`} 
+                    alt="Ticket QR Code" 
+                    className="w-48 h-48"
+                  />
+                </div>
+                <p className="font-mono text-lg font-bold">{selectedTicket.eventName}</p>
+                <p className="text-muted-foreground text-sm">Token ID: #{selectedTicket.tokenId}</p>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showAttendanceProof} onOpenChange={setShowAttendanceProof}>
+        <DialogContent className="max-w-md">
+          {selectedTicket && (
+            <AttendanceProof
+              eventId={selectedTicket.eventId}
+              eventName={selectedTicket.eventName}
+              eventDate={Math.floor(new Date(selectedTicket.eventDate).getTime() / 1000)}
+              eventLocation={selectedTicket.location}
+              ticketId={selectedTicket.tokenId}
+              tokenId={selectedTicket.tokenId}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showTransfer} onOpenChange={setShowTransfer}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Transfer Ticket</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="address">Recipient Address</Label>
+            <Input 
+              id="address" 
+              placeholder="0x..." 
+              value={transferAddress}
+              onChange={(e) => setTransferAddress(e.target.value)}
+              className="mt-2"
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              This action cannot be undone.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTransfer(false)}>Cancel</Button>
+            <Button 
+              onClick={handleTransfer} 
+              disabled={isSubmitting || !transferAddress}
+              className="bg-copper-500 hover:bg-copper-600"
+            >
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+              Transfer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showResell} onOpenChange={setShowResell}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>List for Resale</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {maxResalePrice !== "0" && (
+              <p className="text-xs text-amber-500 mb-4">
+                Maximum resale price: {parseInt(maxResalePrice) / 1e18} ETH
+              </p>
+            )}
+            <Label htmlFor="price">Price (ETH)</Label>
+            <Input 
+              id="price" 
+              type="number"
+              step="0.001"
+              placeholder="0.00" 
+              value={resellPrice}
+              onChange={(e) => setResellPrice(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResell(false)}>Cancel</Button>
+            <Button 
+              onClick={handleResell} 
+              disabled={isSubmitting || !resellPrice}
+              className="bg-copper-500 hover:bg-copper-600"
+            >
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowLeftRight className="h-4 w-4 mr-2" />}
+              List Ticket
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );

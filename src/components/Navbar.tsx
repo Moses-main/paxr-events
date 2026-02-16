@@ -7,6 +7,8 @@ import { ConnectWallet } from "./ConnectWallet";
 const navItems = [
   { label: "Events", href: "/#events" },
   { label: "Marketplace", href: "/marketplace" },
+  { label: "Communities", href: "/communities" },
+  { label: "Dashboard", href: "/dashboard" },
   { label: "My Tickets", href: "/my-tickets" },
   { label: "How It Works", href: "/#how-it-works" },
 ];
@@ -22,11 +24,8 @@ const Navbar = () => {
       className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 backdrop-blur-xl bg-background/80"
     >
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
-        <a href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-copper flex items-center justify-center">
-            <span className="font-display font-bold text-primary-foreground text-sm">P</span>
-          </div>
-          <span className="font-display text-xl font-bold text-foreground">Paxr</span>
+        <a href="/" className="flex items-center">
+          <img src="/Paxr_generic.png" alt="Paxr" className="h-12 w-12 rounded-xl object-cover" />
         </a>
 
         {/* Desktop nav */}

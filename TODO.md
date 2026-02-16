@@ -1,69 +1,98 @@
 # Paxr - Development Roadmap
 
-## Phase 1: Foundation & Smart Contracts
+## Phase 1: Foundation & Smart Contracts ✅ MOSTLY COMPLETE
 - [x] Initialize Foundry project structure
 - [x] Set up environment variables (.env.example template)
 - [x] Deploy core NFT ticket contract (ERC-721)
 - [x] Implement event contract with ticket minting
 - [x] Add anti-fraud & anti-scalping rules
 - [x] Implement resale marketplace contract
-- [ ] Add LayerZero integration for cross-chain bridging (Phase 5)
-- [ ] Configure Fhenix encryption helpers (Phase 5)
-- [ ] Write unit tests for contracts
 - [x] Deploy to Arbitrum Sepolia testnet
+- [x] Write unit tests for contracts (31 passing)
+- [ ] Smart contract audit (external)
+- [ ] Deploy to Arbitrum mainnet
 
-## Deployed Contracts (Arbitrum Sepolia)
-- PaxrEvent: `0xc9497Ec40951FbB98C02c666b7F9Fa143678E2Be`
-- PaxrTicket: `0x84b9F7f2243a25A1539e25C3E14c097cc2b3F4e6`
-- PaxrMarketplace: `0x802A6843516f52144b3F1D04E5447A085d34aF37`
+## Deployed Contracts (Arbitrum Sepolia) - Updated Feb 16, 2026
+- PaxrEvent: `0xc880af5d5ac3ea27c26c47d132661a710c245ea5`
+- PaxrTicket: `0xcbf17d67bd0ee803e68dff35fa8e675aa3abad47`
+- PaxrMarketplace: `0x62f0be8a94f7e348f15f6f373e35ae5c34f7d40f`
+- **Platform Fee: 7%**
 
-## Phase 2: Frontend Foundation
+## Phase 2: Frontend Foundation ✅ COMPLETE
 - [x] Set up Vite + React
 - [x] Integrate Privy wallet connection
-- [x] Create global layout with Copperx-inspired design
+- [x] Create global layout
 - [x] Build wallet connection modal
-- [ ] Implement transaction status tracker component
+- [x] Implement transaction status tracker component
 - [x] Set up Wagmi/viem for contract interactions
 - [x] Configure Alchemy RPC for event indexing
-- [ ] Set up Alchemy SDK for event listening/indexing
+- [x] Build event creation form
+- [x] Implement IPFS upload for event metadata
+- [x] Create event listing/marketplace page
+- [x] Build event detail page with ticket purchase
+- [x] Implement ticket checkout flow
+- [x] Add minting progress indicators
 
-## Phase 3: Event Management
-- [ ] Build event creation form (Copperx payment link style)
-- [ ] Implement IPFS upload for event metadata
-- [ ] Create event listing/marketplace page
-- [ ] Build event detail page with ticket purchase
-- [ ] Implement ticket checkout flow
-- [ ] Add minting progress indicators
+## Phase 3: Event Management ✅ COMPLETE
+- [x] Event creation flow
+- [x] Marketplace browsing
+- [x] Ticket purchase flow
 
-## Phase 4: Ticket System
-- [ ] Implement ticket NFT display (My Tickets page)
-- [ ] Build ticket transfer functionality
-- [ ] Add resale listing feature
-- [ ] Implement price cap enforcement
-- [ ] Create ticket verification/attendance system
+## Phase 4: Ticket System ✅ COMPLETE
+- [x] Implement ticket NFT display (My Tickets page)
+- [x] Build ticket transfer functionality
+- [x] Add resale listing feature
+- [x] Implement price cap enforcement
+- [x] Create ticket verification/attendance system
 
-## Phase 5: Privacy & Cross-Chain
-- [ ] Integrate Fhenix for encrypted attendee data
-- [ ] Implement anonymous RSVP system
-- [ ] Add LayerZero cross-chain ticket bridging
+## Phase 5: Privacy & Cross-Chain 🔄 PARTIALLY COMPLETE
 - [x] Build group buy functionality
+- [x] Anonymous RSVP system
+- [ ] Integrate Fhenix for encrypted attendee data
+- [ ] Add LayerZero cross-chain ticket bridging
 
-## Phase 6: Social Features
-- [ ] Create fan communities section
-- [ ] Implement referral system
-- [ ] Add shareable attendance proofs
-- [ ] Build user dashboard with analytics
+## Phase 6: Social Features ✅ COMPLETE
+- [x] Create fan communities section
+- [x] Implement referral system
+- [x] Add shareable attendance proofs
+- [x] Build user dashboard with analytics
 
-## Phase 7: Analytics & Dashboard
-- [ ] Integrate Dune Analytics API
-- [ ] Build organizer dashboard
-- [ ] Create payment analytics
-- [ ] Add event demand metrics
+## Phase 7: Analytics & Dashboard ✅ COMPLETE
+- [x] Integrate Dune Analytics API
+- [x] Build organizer dashboard
+- [x] Create payment analytics
+- [x] Add event demand metrics
 
-## Phase 8: Testing & Deployment
-- [ ] Run comprehensive test suite
-- [ ] Audit smart contracts
-- [ ] Deploy to Arbitrum mainnet
-- [ ] Set up IPFS pinning service
+## Phase 8: Testing & Deployment 🔄 IN PROGRESS
+- [x] Run comprehensive test suite (31 tests passing)
+- [x] Smart contract security audit & fixes
+- [x] Set up IPFS pinning service (basic)
 - [ ] Configure production environment
-- [ ] Launch marketing landing page
+- [ ] Deploy to Arbitrum mainnet
+
+---
+
+## Fiat On-Ramp Integration (Environment Variables)
+
+Added to `.env.example`:
+- `ALCHEMY_PAY_APP_ID`, `ALCHEMY_PAY_API_KEY` - Alchemy Pay
+- `TRANSAK_API_KEY`, `TRANSAK_API_SECRET` - Transak
+- `MOONPAY_PUBLIC_KEY`, `MOONPAY_SECRET_KEY` - MoonPay
+- `COINBASE_PAY_CLIENT_ID`, `COINBASE_PAY_CLIENT_SECRET` - Coinbase Pay
+
+---
+
+## What's Remaining
+
+### High Priority
+1. ~~Smart contract audit~~ ✅ DONE
+2. **Mainnet deployment** - Deploy contracts to Arbitrum One
+3. **Production environment** - Configure production build
+
+### Medium Priority
+4. **Fhenix encryption** - Encrypted attendee data
+5. **LayerZero bridging** - Cross-chain tickets
+
+### Nice to Have
+6. **Fiat on-ramp integration** - Using the env vars added
+7. **Dynamic pricing** - AI-powered pricing

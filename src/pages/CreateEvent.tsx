@@ -1,18 +1,23 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Ticket, DollarSign, Clock, Upload, X, Loader2, ArrowRight, Settings } from 'lucide-react';
+import { Calendar, MapPin, Ticket, DollarSign, Clock, Upload, X, Loader2, ArrowRight, Settings, ArrowLeft, Home } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { uploadToIPFS } from '@/lib/ipfs';
+import { arbitrumSepolia } from 'wagmi/chains';
+import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useWallet } from '@/hooks/useWallet';
+import { CONTRACT_ADDRESSES } from '@/config/contracts';
 
 const eventSchema = z.object({
   name: z.string().min(3, 'Event name must be at least 3 characters'),
@@ -29,11 +34,43 @@ const eventSchema = z.object({
 
 type EventFormData = z.infer<typeof eventSchema>;
 
+const EVENT_ABI = [
+  {
+    name: 'createEvent',
+    type: 'function',
+    inputs: [
+      { name: '_name', type: 'string' },
+      { name: '_description', type: 'string' },
+      { name: '_imageURI', type: 'string' },
+      { name: '_location', type: 'string' },
+      { name: '_ticketPrice', type: 'uint256' },
+      { name: '_totalTickets', type: 'uint256' },
+      { name: '_eventDate', type: 'uint256' },
+      { name: '_saleStartTime', type: 'uint256' },
+      { name: '_saleEndTime', type: 'uint256' },
+      { name: '_paymentToken', type: 'address' },
+      { name: '_resaleEnabled', type: 'bool' },
+      { name: '_maxResalePrice', type: 'uint256' },
+      { name: '_groupBuyDiscount', type: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'nonpayable',
+  },
+] as const;
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
 export default function CreateEvent() {
+  const navigate = useNavigate();
+  const { address } = useWallet();
+  const { writeContractAsync } = useWriteContract();
   const [isLoading, setIsLoading] = useState(false);
-  const [imageURI, setImageURI] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [resaleEnabled, setResaleEnabled] = useState(false);
   const [groupBuyEnabled, setGroupBuyEnabled] = useState(false);
+  const [txHash, setTxHash] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -42,19 +79,103 @@ export default function CreateEvent() {
     watch,
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
+    defaultValues: {
+      eventDate: '',
+      saleStartTime: '',
+      saleEndTime: '',
+    },
   });
 
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const preview = URL.createObjectURL(file);
+      setImagePreview(preview);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const onSubmit = async (data: EventFormData) => {
+    if (!address) {
+      toast.error('Please connect your wallet first');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      console.log('Event data:', { ...data, imageURI, resaleEnabled, groupBuyEnabled });
-      toast.success('Event created successfully!');
+      let uploadedImageURI = imagePreview;
+      
+      if (imageFile) {
+        try {
+          const ipfsUrl = await uploadToIPFS(imageFile);
+          if (ipfsUrl) {
+            uploadedImageURI = ipfsUrl;
+          }
+        } catch (ipfsError) {
+          console.error('IPFS upload failed, using preview URL:', ipfsError);
+        }
+      }
+
+      const ticketPriceWei = BigInt(Math.floor(parseFloat(data.ticketPrice) * 1e18));
+      const maxResalePriceWei = resaleEnabled && data.maxResalePrice 
+        ? BigInt(Math.floor(parseFloat(data.maxResalePrice) * 1e18))
+        : BigInt(0);
+      const groupBuyDiscountBps = groupBuyEnabled && data.groupBuyDiscount 
+        ? BigInt(Math.floor(parseFloat(data.groupBuyDiscount) * 100))
+        : BigInt(0);
+
+      const tx = await writeContractAsync({
+        address: CONTRACT_ADDRESSES.event as `0x${string}`,
+        abi: EVENT_ABI,
+        functionName: 'createEvent',
+        chain: arbitrumSepolia,
+        args: [
+          data.name,
+          data.description,
+          uploadedImageURI,
+          data.location,
+          ticketPriceWei,
+          BigInt(data.totalTickets),
+          BigInt(Math.floor(new Date(data.eventDate).getTime() / 1000)),
+          BigInt(Math.floor(new Date(data.saleStartTime).getTime() / 1000)),
+          BigInt(Math.floor(new Date(data.saleEndTime).getTime() / 1000)),
+          ZERO_ADDRESS,
+          resaleEnabled,
+          maxResalePriceWei,
+          groupBuyDiscountBps,
+        ],
+      } as any);
+
+      setTxHash(tx);
+      toast.success('Event created! Transaction submitted.');
+      
+      if (tx) {
+        toast.message('Transaction Hash', { description: tx });
+      }
     } catch (error) {
-      console.error(error);
-      toast.error('Failed to create event');
+      console.error('Failed to create event:', error);
+      toast.error('Failed to create event. See console for details.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getTodayDateTime = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
   };
 
   return (
@@ -65,6 +186,24 @@ export default function CreateEvent() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-4xl mx-auto"
         >
+          <div className="flex items-center gap-4 mb-8">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back
+            </button>
+            <div className="h-6 w-px bg-muted-foreground/30" />
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Home className="w-5 h-5" />
+              Home
+            </button>
+          </div>
+
           <div className="mb-8">
             <h1 className="font-display text-4xl font-bold text-foreground">Create Event</h1>
             <p className="text-muted-foreground mt-2">
@@ -147,13 +286,19 @@ export default function CreateEvent() {
 
                     <div className="space-y-2">
                       <Label>Event Image</Label>
-                      <div className="border-2 border-dashed border-copper-200 rounded-lg p-8 text-center hover:border-copper-400 transition-colors cursor-pointer">
-                        {imageURI ? (
+                      <div 
+                        className="border-2 border-dashed border-copper-200 rounded-lg p-8 text-center hover:border-copper-400 transition-colors cursor-pointer"
+                        onClick={handleImageClick}
+                      >
+                        {imagePreview ? (
                           <div className="relative">
-                            <img src={imageURI} alt="Event" className="max-h-48 mx-auto rounded-lg" />
+                            <img src={imagePreview} alt="Event" className="max-h-48 mx-auto rounded-lg" />
                             <button
                               type="button"
-                              onClick={() => setImageURI('')}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeImage();
+                              }}
                               className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
                             >
                               <X className="w-4 h-4" />
@@ -170,18 +315,14 @@ export default function CreateEvent() {
                             </p>
                           </div>
                         )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setImageURI(URL.createObjectURL(file));
-                            }
-                          }}
-                        />
                       </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -191,10 +332,14 @@ export default function CreateEvent() {
                         <Input
                           id="eventDate"
                           type="datetime-local"
+                          min={getTodayDateTime()}
                           {...register('eventDate')}
                           className={`pl-10 ${errors.eventDate ? 'border-red-500' : ''}`}
                         />
                       </div>
+                      {errors.eventDate && (
+                        <p className="text-sm text-red-500">{errors.eventDate.message}</p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -218,6 +363,7 @@ export default function CreateEvent() {
                             id="ticketPrice"
                             type="number"
                             step="0.001"
+                            min="0"
                             placeholder="0.05"
                             {...register('ticketPrice')}
                             className={`pl-10 ${errors.ticketPrice ? 'border-red-500' : ''}`}
@@ -232,6 +378,7 @@ export default function CreateEvent() {
                           <Input
                             id="totalTickets"
                             type="number"
+                            min="1"
                             placeholder="100"
                             {...register('totalTickets')}
                             className={`pl-10 ${errors.totalTickets ? 'border-red-500' : ''}`}
@@ -248,6 +395,7 @@ export default function CreateEvent() {
                           <Input
                             id="saleStartTime"
                             type="datetime-local"
+                            min={getTodayDateTime()}
                             {...register('saleStartTime')}
                             className="pl-10"
                           />
@@ -261,6 +409,7 @@ export default function CreateEvent() {
                           <Input
                             id="saleEndTime"
                             type="datetime-local"
+                            min={getTodayDateTime()}
                             {...register('saleEndTime')}
                             className="pl-10"
                           />
@@ -289,6 +438,7 @@ export default function CreateEvent() {
                             id="groupBuyDiscount"
                             type="number"
                             step="0.001"
+                            min="0"
                             placeholder="0.01"
                             {...register('groupBuyDiscount')}
                           />
@@ -328,6 +478,7 @@ export default function CreateEvent() {
                           id="maxResalePrice"
                           type="number"
                           step="0.001"
+                          min="0"
                           placeholder="0.10"
                           {...register('maxResalePrice')}
                         />
