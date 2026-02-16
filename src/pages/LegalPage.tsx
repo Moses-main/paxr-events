@@ -110,8 +110,8 @@ const LegalPage = () => {
                   <p>
                     For privacy-related inquiries, please contact us at:
                     <br />
-                    <a href="mailto:privacy@paxr.xyz" className="text-copper hover:underline">
-                      privacy@paxr.xyz
+                    <a href="mailto:officialpaxr@gmail.com" className="text-copper hover:underline">
+                      officialpaxr@gmail.com
                     </a>
                   </p>
                 </section>
@@ -213,8 +213,8 @@ const LegalPage = () => {
                   <p>
                     For questions about these terms, contact us at:
                     <br />
-                    <a href="mailto:legal@paxr.xyz" className="text-copper hover:underline">
-                      legal@paxr.xyz
+                    <a href="mailto:officialpaxr@gmail.com" className="text-copper hover:underline">
+                      officialpaxr@gmail.com
                     </a>
                   </p>
                 </section>
