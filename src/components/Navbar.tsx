@@ -7,6 +7,7 @@ import { ConnectWallet } from "./ConnectWallet";
 const navItems = [
   { label: "Events", href: "/#events" },
   { label: "Marketplace", href: "/marketplace" },
+  { label: "Communities", href: "/communities" },
   { label: "My Tickets", href: "/my-tickets" },
   { label: "How It Works", href: "/#how-it-works" },
 ];

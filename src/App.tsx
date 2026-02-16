@@ -8,6 +8,7 @@ import EventDetail from "./pages/EventDetail";
 import Marketplace from "./pages/Marketplace";
 import MyTickets from "./pages/MyTickets";
 import CreateEvent from "./pages/CreateEvent";
+import Communities from "./pages/Communities";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/event/:id" element={<EventDetail />} />
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/my-tickets" element={<MyTickets />} />
+          <Route path="/communities" element={<Communities />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
