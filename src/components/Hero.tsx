@@ -110,6 +110,13 @@ const Hero = () => {
                 </Link>
               ))}
             </div>
+            <div className="mt-4">
+              <Button variant="link" className="text-copper" asChild>
+                <Link to="/marketplace">
+                  View More Events <ArrowRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            </div>
           </motion.div>
         )}
 

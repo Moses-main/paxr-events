@@ -81,8 +81,11 @@ const FeaturedEvents = () => {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-b from-background to-copper-50/30">
-      <div className="container mx-auto px-6">
+    <section className="py-20 bg-gradient-to-b from-background to-copper-50/30 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.03]">
+        <img src="/hero-bg.jpg" alt="" className="w-full h-full object-cover" />
+      </div>
+      <div className="container mx-auto px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
