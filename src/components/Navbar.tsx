@@ -23,9 +23,9 @@ const Navbar = () => {
       transition={{ duration: 0.5 }}
       className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 backdrop-blur-xl bg-background/80"
     >
-      <div className="container mx-auto flex items-center justify-between px-6 py-4">
+      <div className="container mx-auto flex items-center justify-between px-6 py-2">
         <a href="/" className="flex items-center">
-          <img src="/Paxr_generic.png" alt="Paxr" className="h-12 w-12 rounded-xl object-cover" />
+          <img src="/Paxr_generic.png" alt="Paxr" className="h-20 w-20 rounded-xl object-cover" />
         </a>
 
         {/* Desktop nav */}

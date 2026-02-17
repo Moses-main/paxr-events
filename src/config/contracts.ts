@@ -16,4 +16,9 @@ export const CONTRACT_ADDRESSES = {
   marketplace: import.meta.env.VITE_PAXR_MARKETPLACE_ADDRESS || '0x62f0be8a94f7e348f15f6f373e35ae5c34f7d40f',
 }
 
+export const TOKENS = {
+  ETH: { address: '0x0000000000000000000000000000000000000000', symbol: 'ETH', decimals: 18, name: 'Ethereum' },
+  USDC: { address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', symbol: 'USDC', decimals: 6, name: 'USD Coin' },
+}
+
 export const CHAIN_ID = import.meta.env.DEV ? arbitrumSepolia.id : arbitrum.id
