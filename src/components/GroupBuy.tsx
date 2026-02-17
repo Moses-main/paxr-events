@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { useWallet } from '@/hooks/useWallet';
+import { usePrices } from '@/hooks/usePrices';
 
 interface GroupBuyProps {
   eventId: number;
@@ -25,16 +26,18 @@ export default function GroupBuy({
   onJoin
 }: GroupBuyProps) {
   const { isConnected } = useWallet();
+  const { prices } = usePrices();
   const [contribution, setContribution] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [joined, setJoined] = useState(false);
   
   const priceInEth = parseFloat(ticketPrice) / 1e18;
+  const priceInUSD = priceInEth * prices.ETH;
   const discountInEth = parseFloat(discount) / 1e18;
   const discountedPrice = priceInEth - discountInEth;
   
   const mockProgress = 65;
-  const targetAmount = priceInEth * minGroupSize;
+  const targetAmount = priceInUSD * minGroupSize;
   const currentAmount = (targetAmount * mockProgress) / 100;
 
   const handleJoin = async () => {
@@ -105,8 +108,8 @@ export default function GroupBuy({
         <Progress value={mockProgress} className="h-2" />
         
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>{currentAmount.toFixed(3)} ETH raised</span>
-          <span>{targetAmount.toFixed(3)} ETH goal</span>
+          <span>${currentAmount.toFixed(2)} raised</span>
+          <span>${targetAmount.toFixed(2)} goal</span>
         </div>
 
         <div className="pt-2 border-t space-y-3">
@@ -114,29 +117,29 @@ export default function GroupBuy({
             <div>
               <p className="text-sm text-muted-foreground">Original Price</p>
               <p className="font-medium line-through text-muted-foreground">
-                {priceInEth.toFixed(4)} ETH
+                ${(priceInEth * prices.ETH).toFixed(2)}
               </p>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Group Price</p>
               <p className="font-bold text-green-600">
-                {discountedPrice.toFixed(4)} ETH
+                ${(discountedPrice * prices.ETH).toFixed(2)}
               </p>
             </div>
           </div>
           
           <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 p-2 rounded">
             <DollarSign className="h-3 w-3" />
-            <span>Save {discountInEth.toFixed(4)} ETH per ticket!</span>
+            <span>Save ${(discountInEth * prices.ETH).toFixed(2)} per ticket!</span>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contribution">Your Contribution (ETH)</Label>
+            <Label htmlFor="contribution">Your Contribution (USD)</Label>
             <Input
               id="contribution"
               type="number"
               step="0.001"
-              placeholder={`Min ${discountedPrice.toFixed(4)} ETH`}
+              placeholder={`Min $${(discountedPrice * prices.ETH).toFixed(2)}`}
               value={contribution}
               onChange={(e) => setContribution(e.target.value)}
             />

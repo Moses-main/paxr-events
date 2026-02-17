@@ -19,6 +19,7 @@ import { getUserTickets, getTicketData, getEvent, getListing } from "@/lib/alche
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { toast } from "sonner";
 import { CONTRACT_ADDRESSES } from "@/config/contracts";
+import { usePrices } from "@/hooks/usePrices";
 
 interface TicketNFT {
   tokenId: number;
@@ -74,6 +75,7 @@ const MARKETPLACE_ABI = [
 const MyTickets = () => {
   const { address, isConnected } = useWallet();
   const { writeContractAsync } = useWriteContract();
+  const { prices } = usePrices();
   
   const [tickets, setTickets] = useState<TicketNFT[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -166,7 +168,8 @@ const MyTickets = () => {
       const priceInWei = BigInt(Math.floor(parseFloat(resellPrice) * 1e18));
       
       if (maxResalePrice !== "0" && priceInWei > BigInt(maxResalePrice)) {
-        toast.error(`Price cannot exceed maximum resale price of ${parseInt(maxResalePrice) / 1e18} ETH`);
+        const maxPriceUSD = parseInt(maxResalePrice) / 1e18 * prices.ETH;
+        toast.error(`Price cannot exceed maximum resale price of $${maxPriceUSD.toFixed(2)}`);
         setIsSubmitting(false);
         return;
       }
@@ -426,10 +429,10 @@ const MyTickets = () => {
           <div className="py-4">
             {maxResalePrice !== "0" && (
               <p className="text-xs text-amber-500 mb-4">
-                Maximum resale price: {parseInt(maxResalePrice) / 1e18} ETH
+                Maximum resale price: ${(parseInt(maxResalePrice) / 1e18 * prices.ETH).toFixed(2)}
               </p>
             )}
-            <Label htmlFor="price">Price (ETH)</Label>
+            <Label htmlFor="price">Price (USD)</Label>
             <Input 
               id="price" 
               type="number"

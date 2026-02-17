@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useWallet } from '@/hooks/useWallet';
+import { usePrices } from '@/hooks/usePrices';
 
 interface ReferralProps {
   eventId: number;
@@ -29,11 +30,15 @@ export default function Referral({ eventId, eventName }: ReferralProps) {
 
   const referralLink = `https://paxr.xyz/event/${eventId}?ref=${address || ''}`;
 
+  const { prices } = usePrices();
+  
   const [stats] = useState<ReferralStats>({
     totalReferrals: 12,
     successfulReferrals: 8,
     pendingRewards: 0.04,
   });
+
+  const pendingRewardsUSD = (stats.pendingRewards * prices.ETH).toFixed(2);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
@@ -155,7 +160,7 @@ export default function Referral({ eventId, eventName }: ReferralProps) {
                 </div>
                 <div className="text-center p-3 rounded-lg bg-muted">
                   <TrendingUp className="h-4 w-4 mx-auto mb-1 text-copper" />
-                  <p className="text-lg font-bold text-foreground">{stats.pendingRewards} ETH</p>
+                  <p className="text-lg font-bold text-foreground">${pendingRewardsUSD}</p>
                   <p className="text-xs text-muted-foreground">Earned</p>
                 </div>
               </div>

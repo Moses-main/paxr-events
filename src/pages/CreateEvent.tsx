@@ -356,7 +356,7 @@ export default function CreateEvent() {
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="ticketPrice">Ticket Price (ETH)</Label>
+                        <Label htmlFor="ticketPrice">Ticket Price (USD)</Label>
                         <div className="relative">
                           <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                           <Input
@@ -433,7 +433,7 @@ export default function CreateEvent() {
 
                       {groupBuyEnabled && (
                         <div className="space-y-2">
-                          <Label htmlFor="groupBuyDiscount">Group Buy Discount (ETH)</Label>
+                          <Label htmlFor="groupBuyDiscount">Group Buy Discount (USD)</Label>
                           <Input
                             id="groupBuyDiscount"
                             type="number"
@@ -473,7 +473,7 @@ export default function CreateEvent() {
 
                     {resaleEnabled && (
                       <div className="space-y-2">
-                        <Label htmlFor="maxResalePrice">Maximum Resale Price (ETH)</Label>
+                        <Label htmlFor="maxResalePrice">Maximum Resale Price (USD)</Label>
                         <Input
                           id="maxResalePrice"
                           type="number"
@@ -512,7 +512,7 @@ export default function CreateEvent() {
                         </div>
                         <div>
                           <p className="text-muted-foreground">Ticket Price</p>
-                          <p className="font-medium">{watch('ticketPrice') || '-'} ETH</p>
+                          <p className="font-medium">{watch('ticketPrice') || '-'}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">Total Tickets</p>

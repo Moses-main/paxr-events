@@ -170,7 +170,7 @@ const EventDetail = () => {
         onClose={() => setShowTracker(false)}
         eventTitle={event.name}
         ticketTier="General Admission"
-        price={`${totalPrice} ETH`}
+        price={`$${(parseFloat(totalPrice) / 1e18 * prices.ETH).toFixed(2)}`}
       />
 
       {/* Hero Banner */}
@@ -284,7 +284,7 @@ const EventDetail = () => {
               <div className="flex justify-between items-center mb-4 pb-4 border-b border-border">
                 <span className="text-muted-foreground">Total</span>
                 <span className="font-display text-xl font-bold text-foreground">
-                  {totalPrice} ETH
+                  ${(parseFloat(totalPrice) / 1e18 * prices.ETH).toFixed(2)}
                 </span>
               </div>
 

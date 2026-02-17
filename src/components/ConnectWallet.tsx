@@ -14,10 +14,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { usePrices } from '@/hooks/usePrices';
 
 export function ConnectWallet() {
   const { isConnected, address, connectWallet, disconnectWallet, chainId, linkedAccounts, switchAccount, switchNetwork } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
+  const { prices } = usePrices();
 
   const { data: balance } = useBalance({
     address: address as `0x${string}`,
@@ -33,6 +35,12 @@ export function ConnectWallet() {
   const formatBalance = () => {
     if (!balance) return '...';
     return parseFloat(balance.formatted).toFixed(4);
+  };
+
+  const formatBalanceInUSD = () => {
+    if (!balance) return '...';
+    const eth = parseFloat(balance.formatted);
+    return `$${(eth * prices.ETH).toFixed(2)}`;
   };
 
   const getChainName = (id: number | null) => {
@@ -97,7 +105,7 @@ export function ConnectWallet() {
             <div className="w-2 h-2 rounded-full bg-green-500" />
             <span>{formatAddress(address || '')}</span>
             <span className="text-xs text-muted-foreground ml-1">
-              {formatBalance()} ETH
+              {formatBalanceInUSD()}
             </span>
             <ChevronDown className="w-4 h-4 text-gray-500" />
           </div>
@@ -112,7 +120,7 @@ export function ConnectWallet() {
             </div>
             <div className="flex items-center justify-between mt-1">
               <span>Balance:</span>
-              <span className="font-medium text-foreground">{formatBalance()} ETH</span>
+              <span className="font-medium text-foreground">{formatBalanceInUSD()}</span>
             </div>
           </div>
         </div>

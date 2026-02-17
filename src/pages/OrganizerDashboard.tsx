@@ -15,6 +15,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useWallet } from "@/hooks/useWallet";
 import { getAllEvents, EventData } from "@/lib/alchemy";
+import { usePrices } from "@/hooks/usePrices";
 
 interface OrganizerEvent {
   id: number;
@@ -36,10 +37,10 @@ interface AnalyticsData {
 }
 
 const mockAnalytics: AnalyticsData = {
-  totalRevenue: "12.45 ETH",
+  totalRevenue: "$31,125",
   totalTicketsSold: 1247,
   totalEvents: 8,
-  averageTicketPrice: "0.05 ETH",
+  averageTicketPrice: "$125",
   revenueChange: 12.5,
   ticketsChange: 8.3,
 };
@@ -58,6 +59,7 @@ const OrganizerDashboard = () => {
   const [events, setEvents] = useState<OrganizerEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const { prices } = usePrices();
 
   useEffect(() => {
     const fetchOrganizerEvents = async () => {
@@ -285,7 +287,7 @@ const OrganizerDashboard = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-foreground">{event.revenue} ETH</p>
+                        <p className="font-bold text-foreground">{event.revenue}</p>
                         <Badge className={getStatusColor(event.status)}>{event.status}</Badge>
                       </div>
                     </div>
@@ -342,7 +344,7 @@ const OrganizerDashboard = () => {
                           </div>
                           <div>
                             <p className="text-muted-foreground">Revenue</p>
-                            <p className="font-medium">{event.revenue} ETH</p>
+                            <p className="font-medium">{event.revenue}</p>
                           </div>
                         </div>
                         <div className="flex gap-2">
@@ -406,14 +408,11 @@ const OrganizerDashboard = () => {
                   <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
                     <div>
                       <p className="text-sm text-muted-foreground">Platform Fees</p>
-                      <p className="text-2xl font-bold text-foreground">0.31 ETH</p>
+                      <p className="text-2xl font-bold text-foreground">$775</p>
+                      <p className="text-sm text-muted-foreground">This Month</p>
                     </div>
-                    <Badge>2.5%</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
                     <div>
-                      <p className="text-sm text-muted-foreground">Net Revenue</p>
-                      <p className="text-2xl font-bold text-foreground">12.14 ETH</p>
+                      <p className="text-2xl font-bold text-foreground">$30,350</p>
                     </div>
                   </div>
                 </CardContent>
