@@ -32,31 +32,12 @@ interface AnalyticsData {
   totalTicketsSold: number;
   totalEvents: number;
   averageTicketPrice: string;
-  revenueChange: number;
-  ticketsChange: number;
 }
-
-const mockAnalytics: AnalyticsData = {
-  totalRevenue: "$31,125",
-  totalTicketsSold: 1247,
-  totalEvents: 8,
-  averageTicketPrice: "$125",
-  revenueChange: 12.5,
-  ticketsChange: 8.3,
-};
-
-const mockRevenueData = [
-  { month: "Jan", revenue: 1.2 },
-  { month: "Feb", revenue: 1.8 },
-  { month: "Mar", revenue: 2.4 },
-  { month: "Apr", revenue: 1.9 },
-  { month: "May", revenue: 2.1 },
-  { month: "Jun", revenue: 3.05 },
-];
 
 const OrganizerDashboard = () => {
   const { address, isConnected } = useWallet();
   const [events, setEvents] = useState<OrganizerEvent[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const { prices } = usePrices();
@@ -72,16 +53,42 @@ const OrganizerDashboard = () => {
         const allEvents = await getAllEvents();
         const organizerEvents: OrganizerEvent[] = allEvents
           .filter(e => e.organizer.toLowerCase() === address.toLowerCase())
-          .map(e => ({
-            id: e.eventId,
-            name: e.name,
-            ticketsSold: e.ticketsSold,
-            totalTickets: e.totalTickets,
-            revenue: (parseFloat(e.ticketPrice) * e.ticketsSold / 1e18).toFixed(4),
-            status: e.eventDate * 1000 > Date.now() ? "upcoming" : e.isActive ? "active" : "ended",
-            date: new Date(e.eventDate * 1000).toLocaleDateString(),
-          }));
+          .map(e => {
+            const revenueUSD = (parseFloat(e.ticketPrice) / 1e18) * e.ticketsSold * prices.ETH;
+            return {
+              id: e.eventId,
+              name: e.name,
+              ticketsSold: e.ticketsSold,
+              totalTickets: e.totalTickets,
+              revenue: `$${revenueUSD.toFixed(2)}`,
+              status: e.eventDate * 1000 > Date.now() ? "upcoming" : e.isActive ? "active" : "ended",
+              date: new Date(e.eventDate * 1000).toLocaleDateString(),
+            };
+          });
+        
         setEvents(organizerEvents);
+        
+        if (organizerEvents.length > 0) {
+          const totalRevenue = organizerEvents.reduce((sum, e) => {
+            return sum + (parseFloat(e.revenue.replace('$', '')) || 0);
+          }, 0);
+          const totalTickets = organizerEvents.reduce((sum, e) => sum + e.ticketsSold, 0);
+          const avgPrice = totalTickets > 0 ? totalRevenue / totalTickets : 0;
+          
+          setAnalytics({
+            totalRevenue: `$${totalRevenue.toFixed(2)}`,
+            totalTicketsSold: totalTickets,
+            totalEvents: organizerEvents.length,
+            averageTicketPrice: `$${avgPrice.toFixed(2)}`,
+          });
+        } else {
+          setAnalytics({
+            totalRevenue: "$0",
+            totalTicketsSold: 0,
+            totalEvents: 0,
+            averageTicketPrice: "$0",
+          });
+        }
       } catch (error) {
         console.error("Failed to fetch events:", error);
       } finally {
@@ -90,7 +97,7 @@ const OrganizerDashboard = () => {
     };
 
     fetchOrganizerEvents();
-  }, [address]);
+  }, [address, prices]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -147,30 +154,27 @@ const OrganizerDashboard = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            {analytics && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 {
                   title: "Total Revenue",
-                  value: mockAnalytics.totalRevenue,
-                  change: mockAnalytics.revenueChange,
+                  value: analytics.totalRevenue,
                   icon: DollarSign,
                 },
                 {
                   title: "Tickets Sold",
-                  value: mockAnalytics.totalTicketsSold.toLocaleString(),
-                  change: mockAnalytics.ticketsChange,
+                  value: analytics.totalTicketsSold.toLocaleString(),
                   icon: Ticket,
                 },
                 {
                   title: "Active Events",
-                  value: mockAnalytics.totalEvents.toString(),
-                  change: 0,
+                  value: analytics.totalEvents.toString(),
                   icon: Calendar,
                 },
                 {
                   title: "Avg. Ticket Price",
-                  value: mockAnalytics.averageTicketPrice,
-                  change: 0,
+                  value: analytics.averageTicketPrice,
                   icon: Users,
                 },
               ].map((stat, i) => (
@@ -186,16 +190,6 @@ const OrganizerDashboard = () => {
                         <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                           <stat.icon className="h-5 w-5 text-primary" />
                         </div>
-                        {stat.change !== 0 && (
-                          <div className={`flex items-center gap-1 text-sm ${stat.change > 0 ? "text-green-500" : "text-red-500"}`}>
-                            {stat.change > 0 ? (
-                              <TrendingUp className="h-4 w-4" />
-                            ) : (
-                              <TrendingDown className="h-4 w-4" />
-                            )}
-                            {Math.abs(stat.change)}%
-                          </div>
-                        )}
                       </div>
                       <p className="text-2xl font-bold text-foreground">{stat.value}</p>
                       <p className="text-sm text-muted-foreground">{stat.title}</p>
@@ -204,65 +198,9 @@ const OrganizerDashboard = () => {
                 </motion.div>
               ))}
             </div>
+            )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="border-border">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-primary" />
-                    Revenue Overview
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-48 flex items-end gap-2">
-                    {mockRevenueData.map((data, i) => (
-                      <div key={data.month} className="flex-1 flex flex-col items-center gap-2">
-                        <motion.div
-                          initial={{ height: 0 }}
-                          animate={{ height: `${(data.revenue / 3.5) * 100}%` }}
-                          transition={{ delay: i * 0.1 }}
-                          className="w-full bg-gradient-copper rounded-t"
-                          style={{ background: "linear-gradient(180deg, #B87333 0%, #D4894A 100%)" }}
-                        />
-                        <span className="text-xs text-muted-foreground">{data.month}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PieChart className="h-5 w-5 text-primary" />
-                    Ticket Distribution
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    { label: "General Admission", value: 65, color: "bg-primary" },
-                    { label: "VIP", value: 25, color: "bg-copper" },
-                    { label: "Backstage", value: 10, color: "bg-muted-foreground" },
-                  ].map((item) => (
-                    <div key={item.label} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{item.label}</span>
-                        <span className="font-medium">{item.value}%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${item.value}%` }}
-                          className={`h-full ${item.color}`}
-                          style={{ background: item.label === "VIP" ? "linear-gradient(90deg, #B87333, #D4894A)" : undefined }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-
+            {events.length > 0 ? (
             <Card className="border-border">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
@@ -275,7 +213,7 @@ const OrganizerDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {events.length > 0 ? events.slice(0, 3).map((event) => (
+                  {events.slice(0, 5).map((event) => (
                     <div key={event.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                       <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -291,17 +229,20 @@ const OrganizerDashboard = () => {
                         <Badge className={getStatusColor(event.status)}>{event.status}</Badge>
                       </div>
                     </div>
-                  )) : (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">No events yet. Create your first event!</p>
-                      <Button asChild className="mt-4 bg-gradient-copper hover:opacity-90">
-                        <Link to="/create">Create Event</Link>
-                      </Button>
-                    </div>
-                  )}
+                  ))}
                 </div>
               </CardContent>
             </Card>
+            ) : (
+            <Card className="border-border">
+              <CardContent className="py-12 text-center">
+                <p className="text-muted-foreground mb-4">No events yet. Create your first event!</p>
+                <Button asChild className="bg-gradient-copper hover:opacity-90">
+                  <Link to="/create">Create Event</Link>
+                </Button>
+              </CardContent>
+            </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="events" className="space-y-6">
@@ -401,7 +342,7 @@ const OrganizerDashboard = () => {
                   <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
                     <div>
                       <p className="text-sm text-muted-foreground">Total Revenue</p>
-                      <p className="text-2xl font-bold text-foreground">{mockAnalytics.totalRevenue}</p>
+                      <p className="text-2xl font-bold text-foreground">{analytics?.totalRevenue || "$0"}</p>
                     </div>
                     <TrendingUp className="h-8 w-8 text-green-500" />
                   </div>
