@@ -4,10 +4,12 @@ import { Link } from "react-router-dom";
 import { Calendar, MapPin, Users, ArrowUpRight, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getActiveEvents, EventData } from "@/lib/alchemy";
+import { usePrices } from "@/hooks/usePrices";
 
 const FeaturedEvents = () => {
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
+  const { prices } = usePrices();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -33,7 +35,8 @@ const FeaturedEvents = () => {
 
   const formatPrice = (price: string) => {
     const eth = parseFloat(price) / 1e18;
-    return `${eth.toFixed(4)} ETH`;
+    const usd = eth * prices.ETH;
+    return `$${usd.toFixed(2)}`;
   };
 
   const getCategoryColor = (category: string) => {

@@ -8,11 +8,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { getEvent, EventData } from "@/lib/alchemy";
+import { usePrices } from "@/hooks/usePrices";
 
 const CommunityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { prices } = usePrices();
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -46,7 +48,8 @@ const CommunityDetail = () => {
 
   const formatPrice = (price: string) => {
     const eth = parseFloat(price) / 1e18;
-    return `${eth.toFixed(4)} ETH`;
+    const usd = eth * prices.ETH;
+    return `$${usd.toFixed(2)}`;
   };
 
   if (loading) {

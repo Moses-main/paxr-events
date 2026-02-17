@@ -21,11 +21,13 @@ import { Input } from "@/components/ui/input";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getAllEvents, EventData } from "@/lib/alchemy";
+import { usePrices } from "@/hooks/usePrices";
 
 const Marketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
+  const { prices } = usePrices();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -55,7 +57,8 @@ const Marketplace = () => {
 
   const formatPrice = (price: string) => {
     const eth = parseFloat(price) / 1e18;
-    return `${eth.toFixed(4)} ETH`;
+    const usd = eth * prices.ETH;
+    return `$${usd.toFixed(2)}`;
   };
 
   const getStatusBadge = (event: EventData) => {

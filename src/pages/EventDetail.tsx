@@ -17,6 +17,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { useWriteContract } from "wagmi";
 import { CONTRACT_ADDRESSES } from "@/config/contracts";
 import { toast } from "sonner";
+import { usePrices } from "@/hooks/usePrices";
 
 const TICKET_ABI = [
   {
@@ -42,6 +43,7 @@ const EventDetail = () => {
   
   const { address, isConnected } = useWallet();
   const { writeContractAsync } = useWriteContract();
+  const { prices } = usePrices();
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -105,7 +107,8 @@ const EventDetail = () => {
 
   const formatPrice = (price: string) => {
     const eth = parseFloat(price) / 1e18;
-    return `${eth.toFixed(4)} ETH`;
+    const usd = eth * prices.ETH;
+    return `$${usd.toFixed(2)}`;
   };
 
   const getStatus = () => {
