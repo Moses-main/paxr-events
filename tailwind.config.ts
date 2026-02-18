@@ -7,15 +7,26 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: {
+        DEFAULT: "1rem",
+        sm: "1.25rem",
+        md: "1.5rem",
+        lg: "2rem",
+      },
       screens: {
         "2xl": "1400px",
       },
     },
-    extend: {
+      extend: {
       fontFamily: {
         display: ["Space Grotesk", "sans-serif"],
         body: ["Inter", "sans-serif"],
+      },
+      fontSize: {
+        "hero": ["2.5rem", { lineHeight: "1.1", fontWeight: "700" }],
+        "hero-md": ["3.5rem", { lineHeight: "1.1", fontWeight: "700" }],
+        "hero-lg": ["4.5rem", { lineHeight: "1.1", fontWeight: "700" }],
+        "hero-xl": ["5rem", { lineHeight: "1.1", fontWeight: "700" }],
       },
       colors: {
         border: "hsl(var(--border))",

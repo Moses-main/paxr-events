@@ -23,13 +23,13 @@ const Navbar = () => {
       transition={{ duration: 0.5 }}
       className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 backdrop-blur-xl bg-background/80"
     >
-      <div className="container mx-auto flex items-center justify-between px-6 py-2">
+      <div className="container mx-auto flex items-center justify-between px-4 md:px-6 py-2">
         <a href="/" className="flex items-center">
-          <img src="/Paxr_generic.png" alt="Paxr" className="h-20 w-20 rounded-xl object-cover" />
+          <img src="/Paxr_generic.png" alt="Paxr" className="h-12 md:h-16 w-12 md:w-16 rounded-xl object-cover" />
         </a>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-6">
           {navItems.map((item) => (
             <a
               key={item.label}
@@ -41,13 +41,13 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           <ConnectWallet />
         </div>
 
         {/* Mobile toggle */}
-        <button className="md:hidden text-foreground" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        <button className="lg:hidden text-foreground p-2" onClick={() => setIsOpen(!isOpen)}>
+          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
@@ -56,18 +56,18 @@ const Navbar = () => {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="md:hidden border-t border-border bg-background px-6 pb-6"
+          className="lg:hidden border-t border-border bg-background px-4 pb-4"
         >
           {navItems.map((item) => (
             <a
               key={item.label}
               href={item.href}
-              className="block py-3 text-muted-foreground hover:text-foreground transition-colors"
+              className="block py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               {item.label}
             </a>
           ))}
-          <div className="mt-4">
+          <div className="mt-3">
             <ConnectWallet />
           </div>
         </motion.div>

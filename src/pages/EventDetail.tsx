@@ -134,8 +134,8 @@ const EventDetail = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="flex items-center justify-center pt-40">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center pt-32 md:pt-40">
+          <Loader2 className="h-6 w-6 md:h-8 md:w-8 animate-spin text-primary" />
         </div>
       </div>
     );
@@ -145,9 +145,9 @@ const EventDetail = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container mx-auto px-6 pt-40 pb-24 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Event Not Found</h1>
-          <p className="text-muted-foreground mb-6">The event you're looking for doesn't exist.</p>
+        <div className="container mx-auto px-4 md:px-6 pt-32 md:pt-40 pb-16 md:pb-24 text-center">
+          <h1 className="text-xl md:text-2xl font-bold text-foreground mb-3 md:mb-4">Event Not Found</h1>
+          <p className="text-muted-foreground text-sm md:text-base mb-5 md:mb-6">The event you're looking for doesn't exist.</p>
           <Link to="/marketplace">
             <Button>Browse Events</Button>
           </Link>
@@ -174,60 +174,60 @@ const EventDetail = () => {
       />
 
       {/* Hero Banner */}
-      <div className="relative h-[40vh] md:h-[50vh] overflow-hidden">
+      <div className="relative h-[30vh] md:h-[40vh] lg:h-[50vh] overflow-hidden">
         {event.imageURI ? (
           <img src={event.imageURI} alt={event.name} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-copper-100 to-copper-200 flex items-center justify-center">
-            <Ticket className="h-24 w-24 text-copper-400" />
+            <Ticket className="h-16 w-16 md:h-20 md:h-24 lg:h-24 text-copper-400" />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <div className="absolute top-24 left-6">
-          <Link to="/marketplace" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors bg-card/80 backdrop-blur rounded-lg px-3 py-1.5">
-            <ArrowLeft className="h-4 w-4" /> Back
+        <div className="absolute top-20 md:top-24 left-4 md:left-6">
+          <Link to="/marketplace" className="inline-flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-muted-foreground hover:text-foreground transition-colors bg-card/80 backdrop-blur rounded-lg px-2.5 md:px-3 py-1.5">
+            <ArrowLeft className="h-3.5 w-3.5 md:h-4 md:w-4" /> Back
           </Link>
         </div>
       </div>
 
-      <div className="container mx-auto px-6 -mt-32 relative z-10 pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="container mx-auto px-4 md:px-6 -mt-24 md:-mt-32 relative z-10 pb-16 md:pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           {/* Left: Event Info */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="flex items-center gap-3 mb-3">
-                <Badge variant="secondary" className="bg-surface-elevated text-foreground">Event</Badge>
+              <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                <Badge variant="secondary" className="bg-surface-elevated text-foreground text-[10px] md:text-xs">Event</Badge>
                 {event.groupBuyDiscount && parseInt(event.groupBuyDiscount) > 0 && (
-                  <Badge className="bg-primary/10 text-primary border border-primary/20 gap-1">
-                    <Users className="h-3 w-3" /> Group Buy
+                  <Badge className="bg-primary/10 text-primary border border-primary/20 gap-1 text-[10px] md:text-xs">
+                    <Users className="h-2.5 w-2.5 md:h-3 md:w-3" /> Group Buy
                   </Badge>
                 )}
-                <Badge variant="outline" className="border-copper/30 text-copper-light">Arbitrum Orbit</Badge>
+                <Badge variant="outline" className="border-copper/30 text-copper-light text-[10px] md:text-xs">Arbitrum Orbit</Badge>
               </div>
-              <h1 className="font-display text-3xl md:text-5xl font-bold text-foreground">{event.name}</h1>
-              <p className="text-muted-foreground mt-1">by {event.organizer}</p>
+              <h1 className="font-display text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground">{event.name}</h1>
+              <p className="text-muted-foreground text-sm md:text-base mt-1">by {event.organizer}</p>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
               {[
                 { icon: Calendar, label: formatDate(event.eventDate) },
                 { icon: Clock, label: formatTime(event.eventDate) },
                 { icon: MapPin, label: event.location },
                 { icon: Users, label: `${event.ticketsSold.toLocaleString()} / ${event.totalTickets.toLocaleString()}` },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl border border-border bg-card p-4">
-                  <item.icon className="h-5 w-5 text-primary mb-2" />
-                  <p className="text-sm text-foreground leading-snug">{item.label}</p>
+                <div key={item.label} className="rounded-lg md:rounded-xl border border-border bg-card p-2.5 md:p-4">
+                  <item.icon className="h-4 w-4 md:h-5 md:w-5 text-primary mb-1 md:mb-2" />
+                  <p className="text-xs md:text-sm text-foreground leading-snug truncate">{item.label}</p>
                 </div>
               ))}
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-xl border border-border bg-card p-6">
-              <h2 className="font-display text-lg font-semibold text-foreground mb-3">About This Event</h2>
-              <p className="text-muted-foreground leading-relaxed">{event.description}</p>
-              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
-                <Shield className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground">NFT-based tickets on Arbitrum · Resale protection enabled</span>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-xl border border-border bg-card p-4 md:p-6">
+              <h2 className="font-display text-base md:text-lg font-semibold text-foreground mb-2 md:mb-3">About This Event</h2>
+              <p className="text-muted-foreground text-sm md:text-base leading-relaxed">{event.description}</p>
+              <div className="flex items-center gap-2 mt-3 md:mt-4 pt-3 md:pt-4 border-t border-border">
+                <Shield className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary flex-shrink-0" />
+                <span className="text-xs md:text-sm text-muted-foreground">NFT-based tickets on Arbitrum · Resale protection enabled</span>
               </div>
             </motion.div>
 
@@ -242,38 +242,38 @@ const EventDetail = () => {
 
           {/* Right: Purchase Panel */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="space-y-4">
-            <div className="rounded-xl border border-border bg-card p-6 sticky top-24">
-              <h3 className="font-display text-lg font-semibold text-foreground mb-4">Get Tickets</h3>
+            <div className="rounded-xl border border-border bg-card p-4 md:p-6 sticky top-20 md:top-24">
+              <h3 className="font-display text-base md:text-lg font-semibold text-foreground mb-3 md:mb-4">Get Tickets</h3>
 
               {/* Ticket Type */}
-              <div className="rounded-xl border border-primary bg-primary/5 p-4 mb-6">
+              <div className="rounded-xl border border-primary bg-primary/5 p-3 md:p-4 mb-4 md:mb-6">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-display font-semibold text-foreground">General Admission</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{availableTickets.toLocaleString()} of {event.totalTickets.toLocaleString()} left</p>
+                    <p className="font-display font-semibold text-sm md:text-base text-foreground">General Admission</p>
+                    <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">{availableTickets.toLocaleString()} of {event.totalTickets.toLocaleString()} left</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-display font-bold text-primary">{pricePerTicket}</p>
+                    <p className="font-display font-bold text-primary text-sm md:text-base">{pricePerTicket}</p>
                   </div>
                 </div>
               </div>
 
               {/* Quantity */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4 md:mb-6">
                 <span className="text-sm text-muted-foreground">Quantity</span>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   <button 
                     onClick={() => setQuantity(Math.max(1, quantity - 1))} 
                     disabled={quantity <= 1}
-                    className="h-8 w-8 rounded-lg border border-border bg-muted flex items-center justify-center text-foreground hover:bg-secondary disabled:opacity-50"
+                    className="h-8 w-8 rounded-lg border border-border bg-muted flex items-center justify-center text-foreground hover:bg-secondary disabled:opacity-50 text-sm md:text-base"
                   >
                     −
                   </button>
-                  <span className="font-display font-semibold text-foreground w-6 text-center">{quantity}</span>
+                  <span className="font-display font-semibold text-foreground w-5 md:w-6 text-center">{quantity}</span>
                   <button 
                     onClick={() => setQuantity(Math.min(4, quantity + 1))} 
                     disabled={quantity >= 4 || quantity >= availableTickets}
-                    className="h-8 w-8 rounded-lg border border-border bg-muted flex items-center justify-center text-foreground hover:bg-secondary disabled:opacity-50"
+                    className="h-8 w-8 rounded-lg border border-border bg-muted flex items-center justify-center text-foreground hover:bg-secondary disabled:opacity-50 text-sm md:text-base"
                   >
                     +
                   </button>
@@ -281,9 +281,9 @@ const EventDetail = () => {
               </div>
 
               {/* Total */}
-              <div className="flex justify-between items-center mb-4 pb-4 border-b border-border">
-                <span className="text-muted-foreground">Total</span>
-                <span className="font-display text-xl font-bold text-foreground">
+              <div className="flex justify-between items-center mb-3 md:mb-4 pb-3 md:pb-4 border-b border-border">
+                <span className="text-sm md:text-base text-muted-foreground">Total</span>
+                <span className="font-display text-lg md:text-xl font-bold text-foreground">
                   ${(parseFloat(totalPrice) / 1e18 * prices.ETH).toFixed(2)}
                 </span>
               </div>
@@ -291,16 +291,16 @@ const EventDetail = () => {
               <Button
                 onClick={handleBuyTicket}
                 disabled={!isConnected || isMinting || availableTickets === 0 || !event.isActive}
-                className="w-full bg-gradient-copper text-primary-foreground hover:opacity-90 shadow-copper py-6 text-base font-display font-semibold gap-2"
+                className="w-full bg-gradient-copper text-primary-foreground hover:opacity-90 shadow-copper py-4 md:py-6 text-sm md:text-base font-display font-semibold gap-2"
               >
                 {isMinting ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
                     Processing...
                   </>
                 ) : !isConnected ? (
                   <>
-                    <Lock className="h-5 w-5" />
+                    <Lock className="h-4 w-4 md:h-5 md:w-5" />
                     Connect Wallet
                   </>
                 ) : availableTickets === 0 ? (
@@ -309,20 +309,20 @@ const EventDetail = () => {
                   "Sales Closed"
                 ) : (
                   <>
-                    <Ticket className="h-5 w-5" />
+                    <Ticket className="h-4 w-4 md:h-5 md:w-5" />
                     Mint {quantity > 1 ? `${quantity} Tickets` : "Ticket"}
                   </>
                 )}
               </Button>
 
               <div className="flex gap-2 mt-3">
-                <Button variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-2" onClick={() => setLiked(!liked)}>
-                  <Heart className={`h-4 w-4 ${liked ? "fill-primary text-primary" : ""}`} />
+                <Button variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 md:gap-2 py-4 md:py-5 text-xs md:text-sm" onClick={() => setLiked(!liked)}>
+                  <Heart className={`h-3.5 w-3.5 md:h-4 md:w-4 ${liked ? "fill-primary text-primary" : ""}`} />
                   {liked ? "Saved" : "Save"}
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="flex-1 border-border text-muted-foreground hover:text-foreground gap-2"
+                  className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 md:gap-2 py-4 md:py-5 text-xs md:text-sm"
                   onClick={() => {
                     const shareUrl = window.location.href;
                     if (navigator.share) {
@@ -337,7 +337,7 @@ const EventDetail = () => {
                     }
                   }}
                 >
-                  <Share2 className="h-4 w-4" /> Share
+                  <Share2 className="h-3.5 w-3.5 md:h-4 md:w-4" /> Share
                 </Button>
               </div>
             </div>

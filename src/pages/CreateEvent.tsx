@@ -179,138 +179,142 @@ export default function CreateEvent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-copper-50/30 pt-24 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-background to-copper-50/30 pt-20 pb-8 md:pt-24 md:pb-12">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-2 md:gap-4 mb-6 md:mb-8">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
               Back
             </button>
-            <div className="h-6 w-px bg-muted-foreground/30" />
+            <div className="h-4 md:h-6 w-px bg-muted-foreground/30" />
             <button
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Home className="w-5 h-5" />
+              <Home className="w-4 h-4" />
               Home
             </button>
           </div>
 
-          <div className="mb-8">
-            <h1 className="font-display text-4xl font-bold text-foreground">Create Event</h1>
-            <p className="text-muted-foreground mt-2">
+          <div className="mb-6 md:mb-8">
+            <h1 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">Create Event</h1>
+            <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
               Set up your event and start selling tickets in minutes
             </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Tabs defaultValue="basic" className="space-y-6">
+            <Tabs defaultValue="basic" className="space-y-4 md:space-y-6">
               <TabsList className="grid w-full grid-cols-4 bg-copper-100 p-1 h-auto">
-                <TabsTrigger value="basic" className="data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
-                  <Ticket className="w-4 h-4 mr-2" />
-                  Basic Info
+                <TabsTrigger value="basic" className="data-[state=active]:bg-white data-[state=active]:shadow-sm py-1.5 md:py-2 text-[10px] md:text-xs px-1 md:px-2">
+                  <Ticket className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">Basic Info</span>
+                  <span className="sm:hidden">Basic</span>
                 </TabsTrigger>
-                <TabsTrigger value="tickets" className="data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  Tickets
+                <TabsTrigger value="tickets" className="data-[state=active]:bg-white data-[state=active]:shadow-sm py-1.5 md:py-2 text-[10px] md:text-xs px-1 md:px-2">
+                  <DollarSign className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">Tickets</span>
+                  <span className="sm:hidden">$</span>
                 </TabsTrigger>
-                <TabsTrigger value="resale" className="data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Resale
+                <TabsTrigger value="resale" className="data-[state=active]:bg-white data-[state=active]:shadow-sm py-1.5 md:py-2 text-[10px] md:text-xs px-1 md:px-2">
+                  <Settings className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">Resale</span>
+                  <span className="sm:hidden">Resale</span>
                 </TabsTrigger>
-                <TabsTrigger value="review" className="data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
-                  <Clock className="w-4 h-4 mr-2" />
-                  Review
+                <TabsTrigger value="review" className="data-[state=active]:bg-white data-[state=active]:shadow-sm py-1.5 md:py-2 text-[10px] md:text-xs px-1 md:px-2">
+                  <Clock className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">Review</span>
+                  <span className="sm:hidden">Review</span>
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="basic">
                 <Card className="border-copper-200 shadow-sm">
                   <CardHeader>
-                    <CardTitle>Basic Information</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-base md:text-lg">Basic Information</CardTitle>
+                    <CardDescription className="text-xs md:text-sm">
                       Enter the basic details about your event
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Event Name</Label>
+                  <CardContent className="space-y-4 md:space-y-6">
+                    <div className="space-y-1.5 md:space-y-2">
+                      <Label htmlFor="name" className="text-xs md:text-sm">Event Name</Label>
                       <Input
                         id="name"
                         placeholder="e.g., Summer Music Festival 2024"
                         {...register('name')}
-                        className={errors.name ? 'border-red-500' : ''}
+                        className={`text-sm md:text-base ${errors.name ? 'border-red-500' : ''}`}
                       />
                       {errors.name && (
-                        <p className="text-sm text-red-500">{errors.name.message}</p>
+                        <p className="text-xs md:text-sm text-red-500">{errors.name.message}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
+                    <div className="space-y-1.5 md:space-y-2">
+                      <Label htmlFor="description" className="text-xs md:text-sm">Description</Label>
                       <Textarea
                         id="description"
                         placeholder="Tell attendees what your event is about..."
-                        rows={4}
+                        rows={3}
                         {...register('description')}
-                        className={errors.description ? 'border-red-500' : ''}
+                        className={`text-sm md:text-base ${errors.description ? 'border-red-500' : ''}`}
                       />
                       {errors.description && (
-                        <p className="text-sm text-red-500">{errors.description.message}</p>
+                        <p className="text-xs md:text-sm text-red-500">{errors.description.message}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Location</Label>
+                    <div className="space-y-1.5 md:space-y-2">
+                      <Label htmlFor="location" className="text-xs md:text-sm">Location</Label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="location"
                           placeholder="Venue name and address"
                           {...register('location')}
-                          className={`pl-10 ${errors.location ? 'border-red-500' : ''}`}
+                          className={`pl-10 text-sm md:text-base ${errors.location ? 'border-red-500' : ''}`}
                         />
                       </div>
                       {errors.location && (
-                        <p className="text-sm text-red-500">{errors.location.message}</p>
+                        <p className="text-xs md:text-sm text-red-500">{errors.location.message}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Event Image</Label>
+                    <div className="space-y-1.5 md:space-y-2">
+                      <Label className="text-xs md:text-sm">Event Image</Label>
                       <div 
-                        className="border-2 border-dashed border-copper-200 rounded-lg p-8 text-center hover:border-copper-400 transition-colors cursor-pointer"
+                        className="border-2 border-dashed border-copper-200 rounded-lg p-4 md:p-8 text-center hover:border-copper-400 transition-colors cursor-pointer"
                         onClick={handleImageClick}
                       >
                         {imagePreview ? (
                           <div className="relative">
-                            <img src={imagePreview} alt="Event" className="max-h-48 mx-auto rounded-lg" />
+                            <img src={imagePreview} alt="Event" className="max-h-32 md:max-h-48 mx-auto rounded-lg" />
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 removeImage();
                               }}
-                              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                              className="absolute top-1 md:top-2 right-1 md:right-2 bg-red-500 text-white p-1 rounded-full"
                             >
-                              <X className="w-4 h-4" />
+                              <X className="w-3 h-3 md:w-4 md:h-4" />
                             </button>
                           </div>
                         ) : (
-                          <div className="space-y-2">
-                            <Upload className="w-8 h-8 mx-auto text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">
+                          <div className="space-y-1 md:space-y-2">
+                            <Upload className="w-6 h-6 md:w-8 md:h-8 mx-auto text-muted-foreground" />
+                            <p className="text-xs md:text-sm text-muted-foreground">
                               Click to upload or drag and drop
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-[10px] md:text-xs text-muted-foreground">
                               PNG, JPG up to 10MB
                             </p>
                           </div>
@@ -325,20 +329,20 @@ export default function CreateEvent() {
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="eventDate">Event Date & Time</Label>
+                    <div className="space-y-1.5 md:space-y-2">
+                      <Label htmlFor="eventDate" className="text-xs md:text-sm">Event Date & Time</Label>
                       <div className="relative">
-                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="eventDate"
                           type="datetime-local"
                           min={getTodayDateTime()}
                           {...register('eventDate')}
-                          className={`pl-10 ${errors.eventDate ? 'border-red-500' : ''}`}
+                          className={`pl-10 text-sm md:text-base ${errors.eventDate ? 'border-red-500' : ''}`}
                         />
                       </div>
                       {errors.eventDate && (
-                        <p className="text-sm text-red-500">{errors.eventDate.message}</p>
+                        <p className="text-xs md:text-sm text-red-500">{errors.eventDate.message}</p>
                       )}
                     </div>
                   </CardContent>
@@ -348,17 +352,17 @@ export default function CreateEvent() {
               <TabsContent value="tickets">
                 <Card className="border-copper-200 shadow-sm">
                   <CardHeader>
-                    <CardTitle>Ticket Settings</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-base md:text-lg">Ticket Settings</CardTitle>
+                    <CardDescription className="text-xs md:text-sm">
                       Configure your ticket pricing and availability
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="ticketPrice">Ticket Price (USD)</Label>
+                  <CardContent className="space-y-4 md:space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                      <div className="space-y-1.5 md:space-y-2">
+                        <Label htmlFor="ticketPrice" className="text-xs md:text-sm">Ticket Price (USD)</Label>
                         <div className="relative">
-                          <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
                             id="ticketPrice"
                             type="number"
@@ -366,62 +370,62 @@ export default function CreateEvent() {
                             min="0"
                             placeholder="0.05"
                             {...register('ticketPrice')}
-                            className={`pl-10 ${errors.ticketPrice ? 'border-red-500' : ''}`}
+                            className={`pl-10 text-sm md:text-base ${errors.ticketPrice ? 'border-red-500' : ''}`}
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="totalTickets">Total Tickets</Label>
+                      <div className="space-y-1.5 md:space-y-2">
+                        <Label htmlFor="totalTickets" className="text-xs md:text-sm">Total Tickets</Label>
                         <div className="relative">
-                          <Ticket className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
                             id="totalTickets"
                             type="number"
                             min="1"
                             placeholder="100"
                             {...register('totalTickets')}
-                            className={`pl-10 ${errors.totalTickets ? 'border-red-500' : ''}`}
+                            className={`pl-10 text-sm md:text-base ${errors.totalTickets ? 'border-red-500' : ''}`}
                           />
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="saleStartTime">Sale Start</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                      <div className="space-y-1.5 md:space-y-2">
+                        <Label htmlFor="saleStartTime" className="text-xs md:text-sm">Sale Start</Label>
                         <div className="relative">
-                          <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
                             id="saleStartTime"
                             type="datetime-local"
                             min={getTodayDateTime()}
                             {...register('saleStartTime')}
-                            className="pl-10"
+                            className="pl-10 text-sm md:text-base"
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="saleEndTime">Sale End</Label>
+                      <div className="space-y-1.5 md:space-y-2">
+                        <Label htmlFor="saleEndTime" className="text-xs md:text-sm">Sale End</Label>
                         <div className="relative">
-                          <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
                             id="saleEndTime"
                             type="datetime-local"
                             min={getTodayDateTime()}
                             {...register('saleEndTime')}
-                            className="pl-10"
+                            className="pl-10 text-sm md:text-base"
                           />
                         </div>
                       </div>
                     </div>
 
-                    <div className="space-y-4 pt-4 border-t">
+                    <div className="space-y-3 md:space-y-4 pt-3 md:pt-4 border-t">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
-                          <Label>Enable Group Buy</Label>
-                          <p className="text-sm text-muted-foreground">
+                          <Label className="text-xs md:text-sm">Enable Group Buy</Label>
+                          <p className="text-[10px] md:text-sm text-muted-foreground">
                             Allow users to pool together for discounted tickets
                           </p>
                         </div>
@@ -432,8 +436,8 @@ export default function CreateEvent() {
                       </div>
 
                       {groupBuyEnabled && (
-                        <div className="space-y-2">
-                          <Label htmlFor="groupBuyDiscount">Group Buy Discount (USD)</Label>
+                        <div className="space-y-1.5 md:space-y-2">
+                          <Label htmlFor="groupBuyDiscount" className="text-xs md:text-sm">Group Buy Discount (USD)</Label>
                           <Input
                             id="groupBuyDiscount"
                             type="number"
@@ -441,6 +445,7 @@ export default function CreateEvent() {
                             min="0"
                             placeholder="0.01"
                             {...register('groupBuyDiscount')}
+                            className="text-sm md:text-base"
                           />
                         </div>
                       )}
@@ -452,16 +457,16 @@ export default function CreateEvent() {
               <TabsContent value="resale">
                 <Card className="border-copper-200 shadow-sm">
                   <CardHeader>
-                    <CardTitle>Resale Settings</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-base md:text-lg">Resale Settings</CardTitle>
+                    <CardDescription className="text-xs md:text-sm">
                       Control how tickets can be resold on the marketplace
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-4 md:space-y-6">
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
-                        <Label>Enable Resale</Label>
-                        <p className="text-sm text-muted-foreground">
+                        <Label className="text-xs md:text-sm">Enable Resale</Label>
+                        <p className="text-[10px] md:text-sm text-muted-foreground">
                           Allow ticket holders to list their tickets for sale
                         </p>
                       </div>
@@ -472,8 +477,8 @@ export default function CreateEvent() {
                     </div>
 
                     {resaleEnabled && (
-                      <div className="space-y-2">
-                        <Label htmlFor="maxResalePrice">Maximum Resale Price (USD)</Label>
+                      <div className="space-y-1.5 md:space-y-2">
+                        <Label htmlFor="maxResalePrice" className="text-xs md:text-sm">Maximum Resale Price (USD)</Label>
                         <Input
                           id="maxResalePrice"
                           type="number"
@@ -481,8 +486,9 @@ export default function CreateEvent() {
                           min="0"
                           placeholder="0.10"
                           {...register('maxResalePrice')}
+                          className="text-sm md:text-base"
                         />
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-[10px] md:text-sm text-muted-foreground">
                           Set a cap to prevent scalping. Leave empty for no limit.
                         </p>
                       </div>
@@ -494,14 +500,14 @@ export default function CreateEvent() {
               <TabsContent value="review">
                 <Card className="border-copper-200 shadow-sm">
                   <CardHeader>
-                    <CardTitle>Review & Publish</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-base md:text-lg">Review & Publish</CardTitle>
+                    <CardDescription className="text-xs md:text-sm">
                       Review your event details before publishing
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="bg-muted rounded-lg p-4 space-y-4">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                  <CardContent className="space-y-4 md:space-y-6">
+                    <div className="bg-muted rounded-lg p-3 md:p-4 space-y-3 md:space-y-4">
+                      <div className="grid grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm">
                         <div>
                           <p className="text-muted-foreground">Event Name</p>
                           <p className="font-medium">{watch('name') || '-'}</p>
@@ -532,18 +538,18 @@ export default function CreateEvent() {
                     <Button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full bg-gradient-copper hover:opacity-90 text-white font-semibold py-6"
+                      className="w-full bg-gradient-copper hover:opacity-90 text-white font-semibold py-4 md:py-6 text-sm md:text-base"
                       style={{ background: 'linear-gradient(135deg, #B87333 0%, #D4894A 100%)' }}
                     >
                       {isLoading ? (
                         <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          <Loader2 className="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2 animate-spin" />
                           Creating Event...
                         </>
                       ) : (
                         <>
                           Create Event
-                          <ArrowRight className="w-5 h-5 ml-2" />
+                          <ArrowRight className="w-4 h-4 md:w-5 md:h-5 ml-1.5 md:ml-2" />
                         </>
                       )}
                     </Button>
