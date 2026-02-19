@@ -62,7 +62,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export default function CreateEvent() {
   const navigate = useNavigate();
-  const { address } = useWallet();
+  const { address, chainId, switchNetwork } = useWallet();
   const { writeContractAsync } = useWriteContract();
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -110,6 +110,13 @@ export default function CreateEvent() {
   const onSubmit = async (data: EventFormData) => {
     if (!address) {
       toast.error('Please connect your wallet first');
+      return;
+    }
+
+    // Check if user is on Arbitrum Sepolia
+    if (chainId !== arbitrumSepolia.id) {
+      toast.error('Please switch to Arbitrum Sepolia testnet to create events');
+      await switchNetwork(arbitrumSepolia.id);
       return;
     }
 
@@ -210,6 +217,24 @@ export default function CreateEvent() {
               Set up your event and start selling tickets in minutes
             </p>
           </div>
+
+          {chainId !== arbitrumSepolia.id && (
+            <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-red-400">Wrong Network Detected</p>
+                  <p className="text-xs text-muted-foreground">Please switch to Arbitrum Sepolia testnet to create events</p>
+                </div>
+                <Button
+                  onClick={() => switchNetwork(arbitrumSepolia.id)}
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Switch Network
+                </Button>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <Tabs defaultValue="basic" className="space-y-4 md:space-y-6">

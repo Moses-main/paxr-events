@@ -179,13 +179,13 @@ export function ConnectWallet() {
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <a
-            href={`https://arbiscan.io/address/${address}`}
+            href={chainId === 421614 ? `https://sepolia.arbiscan.io/address/${address}` : `https://arbiscan.io/address/${address}`}
             target="_blank"
             rel="noopener noreferrer"
             className="cursor-pointer"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
-            View on Arbiscan
+            View on {chainId === 421614 ? 'Arbiscan (Sepolia)' : 'Arbiscan'}
           </a>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
