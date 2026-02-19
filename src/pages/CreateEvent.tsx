@@ -15,9 +15,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { uploadToIPFS } from '@/lib/ipfs';
 import { arbitrumSepolia } from 'wagmi/chains';
-import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useWriteContract, useWaitForTransactionReceipt, useBalance } from 'wagmi';
 import { useWallet } from '@/hooks/useWallet';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
+import { usePrices } from '@/hooks/usePrices';
 
 const eventSchema = z.object({
   name: z.string().min(3, 'Event name must be at least 3 characters'),
@@ -64,6 +65,12 @@ export default function CreateEvent() {
   const navigate = useNavigate();
   const { address, chainId, switchNetwork } = useWallet();
   const { writeContractAsync } = useWriteContract();
+  const { prices } = usePrices();
+  const { data: balance } = useBalance({
+    address: address as `0x${string}`,
+    chainId: arbitrumSepolia.id,
+    query: { enabled: !!address }
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
@@ -120,6 +127,14 @@ export default function CreateEvent() {
       return;
     }
 
+    // Check if user has enough ETH for gas (minimum 0.001 ETH)
+    const balanceETH = balance ? parseFloat(balance.formatted) : 0;
+    if (balanceETH < 0.001) {
+      toast.error('Insufficient ETH for gas. Please get some test ETH from a faucet.');
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       let uploadedImageURI = imagePreview;
@@ -163,6 +178,7 @@ export default function CreateEvent() {
           maxResalePriceWei,
           groupBuyDiscountBps,
         ],
+        gas: BigInt(500000), // Explicit gas limit
       } as any);
 
       setTxHash(tx);
@@ -171,9 +187,10 @@ export default function CreateEvent() {
       if (tx) {
         toast.message('Transaction Hash', { description: tx });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create event:', error);
-      toast.error('Failed to create event. See console for details.');
+      const errorMessage = error?.message || error?.reason || 'Failed to create event. Make sure you have enough ETH for gas.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -232,6 +249,27 @@ export default function CreateEvent() {
                 >
                   Switch Network
                 </Button>
+              </div>
+            </div>
+          )}
+
+          {address && balance && parseFloat(balance.formatted) < 0.001 && (
+            <div className="mb-6 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-yellow-400">Low Balance</p>
+                  <p className="text-xs text-muted-foreground">
+                    Your balance: {balance.formatted.slice(0, 6)} ETH - You need at least 0.001 ETH for gas
+                  </p>
+                </div>
+                <a
+                  href="https://faucet.quicknode.com/arbitrum/sepolia"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary hover:underline"
+                >
+                  Get Test ETH
+                </a>
               </div>
             </div>
           )}
