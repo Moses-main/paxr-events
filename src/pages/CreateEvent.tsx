@@ -79,6 +79,26 @@ export default function CreateEvent() {
   const [txHash, setTxHash] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const getDefaultEventDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    return date.toISOString().slice(0, 16);
+  };
+
+  const getDefaultSaleStart = () => {
+    const date = new Date();
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    return date.toISOString().slice(0, 16);
+  };
+
+  const getDefaultSaleEnd = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 1);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    return date.toISOString().slice(0, 16);
+  };
+
   const {
     register,
     handleSubmit,
@@ -87,9 +107,9 @@ export default function CreateEvent() {
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
-      eventDate: '',
-      saleStartTime: '',
-      saleEndTime: '',
+      eventDate: getDefaultEventDate(),
+      saleStartTime: getDefaultSaleStart(),
+      saleEndTime: getDefaultSaleEnd(),
     },
   });
 
@@ -178,18 +198,47 @@ export default function CreateEvent() {
           maxResalePriceWei,
           groupBuyDiscountBps,
         ],
-        gas: BigInt(500000), // Explicit gas limit
+        gas: BigInt(500000),
       } as any);
 
       setTxHash(tx);
-      toast.success('Event created! Transaction submitted.');
+      toast.success('Event created successfully!');
       
       if (tx) {
         toast.message('Transaction Hash', { description: tx });
       }
+      
+      // Redirect to marketplace after a short delay
+      setTimeout(() => {
+        navigate('/marketplace');
+      }, 2000);
     } catch (error: any) {
       console.error('Failed to create event:', error);
-      const errorMessage = error?.message || error?.reason || 'Failed to create event. Make sure you have enough ETH for gas.';
+      
+      // Extract contract revert message if available
+      let errorMessage = 'Failed to create event.';
+      
+      if (error?.message) {
+        // Check for common contract revert patterns
+        if (error.message.includes('Sale must start')) {
+          errorMessage = 'Sale start time must be in the past or present. Please adjust your sale timing.';
+        } else if (error.message.includes('Sale end time')) {
+          errorMessage = 'Sale end time must be after the sale start time.';
+        } else if (error.message.includes('Event date')) {
+          errorMessage = 'Event date must be in the future.';
+        } else if (error.message.includes('Insufficient')) {
+          errorMessage = 'Insufficient ETH for gas. Please get more test ETH.';
+        } else if (error.message.includes('User rejected')) {
+          errorMessage = 'Transaction was rejected. Please try again.';
+        } else {
+          // Try to extract revert reason from error message
+          const match = error.message.match(/reason[:"]+([^"]+)/i);
+          if (match) {
+            errorMessage = `Error: ${match[1]}`;
+          }
+        }
+      }
+      
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -200,6 +249,13 @@ export default function CreateEvent() {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     return now.toISOString().slice(0, 16);
+  };
+
+  const getTomorrowDateTime = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
+    return tomorrow.toISOString().slice(0, 16);
   };
 
   return (
