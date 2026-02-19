@@ -3,26 +3,31 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Shield, Ticket, Calendar, MapPin, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getActiveEvents, EventData } from "@/lib/alchemy";
+import { getActiveEvents, EventData, getEventCount } from "@/lib/alchemy";
 import { usePrices } from "@/hooks/usePrices";
 
 const Hero = () => {
   const [featuredEvents, setFeaturedEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [eventCount, setEventCount] = useState<number>(0);
   const { prices } = usePrices();
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       try {
-        const events = await getActiveEvents();
-        setFeaturedEvents(events.slice(0, 3));
+        const [activeEvents, count] = await Promise.all([
+          getActiveEvents(),
+          getEventCount()
+        ]);
+        setFeaturedEvents(activeEvents.slice(0, 3));
+        setEventCount(count);
       } catch (error) {
         console.error("Failed to fetch events:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchEvents();
+    fetchData();
   }, []);
 
   const formatPrice = (price: string) => {
@@ -168,9 +173,9 @@ const Hero = () => {
           className="grid grid-cols-3 gap-4 md:gap-8 max-w-sm md:max-w-xl mx-auto mt-12 md:mt-20"
         >
           {[
-            { value: "50K+", label: "Tickets Minted" },
-            { value: "1.2K", label: "Events Live" },
-            { value: "0%", label: "Fraud Rate" },
+            { value: eventCount > 0 ? eventCount.toString() : "—", label: "Events Created" },
+            { value: featuredEvents.length > 0 ? featuredEvents.length.toString() : "—", label: "Active Events" },
+            { value: "100%", label: "Secure" },
           ].map((stat) => (
             <div key={stat.label}>
               <p className="font-display text-xl md:text-3xl lg:text-4xl font-bold text-gradient-copper">{stat.value}</p>

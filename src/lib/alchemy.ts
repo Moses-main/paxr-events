@@ -4,7 +4,7 @@ import { CONTRACT_ADDRESSES } from '@/config/contracts';
 
 const publicClient: PublicClient = createPublicClient({
   chain: arbitrumSepolia,
-  transport: http(import.meta.env.VITE_ARBITRUM_SEPOLIA_RPC || 'https://arb-sepolia.g.alchemy.com/v2/demo'),
+  transport: http(import.meta.env.VITE_ARBITRUM_SEPOLIA_RPC || 'https://sepolia-rollup.arbitrum.io/rpc'),
 });
 
 export interface EventData {
