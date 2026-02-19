@@ -13,9 +13,9 @@
 - [ ] Deploy to Arbitrum mainnet
 
 ## Deployed Contracts (Arbitrum Sepolia) - Updated Feb 19, 2026
-- PaxrEvent: `0xA076ecA49434a4475a9FF716c2E9f20ccc453c20`
-- PaxrTicket: `0x24AaD9a08F7e8C11F3B62a68Acbd5D74D2FfA225`
-- PaxrMarketplace: `0xb0d900AeE4f0D163dB34BAf239f9885F38bD1EDe`
+- PaxrEvent: `0x9397eBE8d5235fb818736eA8b2c90c3a51c5d278`
+- PaxrTicket: `0x47F40AC7982Fd70f2eCF633e57d2A347a5116289`
+- PaxrMarketplace: `0x4e9A9676B3E24E406a42710A06120561D5A9A045`
 - **Platform Fee: 7%**
 
 ## Phase 2: Frontend Foundation ✅ COMPLETE

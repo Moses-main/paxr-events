@@ -77,9 +77,9 @@ Ticket Owner → My Tickets → Select Ticket → List for Sale
 
 | Contract | Address (Arbitrum Sepolia) | Purpose |
 |----------|---------------------------|---------|
-| PaxrEvent | `0xA076ecA49434a4475a9FF716c2E9f20ccc453c20` | Event creation & management |
-| PaxrTicket | `0x24AaD9a08F7e8C11F3B62a68Acbd5D74D2FfA225` | NFT ticket minting |
-| PaxrMarketplace | `0xb0d900AeE4f0D163dB34BAf239f9885F38bD1EDe` | Ticket resale & trading |
+| PaxrEvent | `0x9397eBE8d5235fb818736eA8b2c90c3a51c5d278` | Event creation & management |
+| PaxrTicket | `0x47F40AC7982Fd70f2eCF633e57d2A347a5116289` | NFT ticket minting |
+| PaxrMarketplace | `0x4e9A9676B3E24E406a42710A06120561D5A9A045` | Ticket resale & trading |
 
 ## Getting Started
 
@@ -106,9 +106,9 @@ Create a `.env` file with the following:
 ```env
 VITE_PRIVY_APP_ID=your_privy_app_id
 VITE_ARBITRUM_SEPOLIA_RPC=your_alchemy_rpc_url
-VITE_PAXR_EVENT_ADDRESS=0xA076ecA49434a4475a9FF716c2E9f20ccc453c20
-VITE_PAXR_TICKET_ADDRESS=0x24AaD9a08F7e8C11F3B62a68Acbd5D74D2FfA225
-VITE_PAXR_MARKETPLACE_ADDRESS=0xb0d900AeE4f0D163dB34BAf239f9885F38bD1EDe
+VITE_PAXR_EVENT_ADDRESS=0x9397eBE8d5235fb818736eA8b2c90c3a51c5d278
+VITE_PAXR_TICKET_ADDRESS=0x47F40AC7982Fd70f2eCF633e57d2A347a5116289
+VITE_PAXR_MARKETPLACE_ADDRESS=0x4e9A9676B3E24E406a42710A06120561D5A9A045
 ```
 
 ### Build
