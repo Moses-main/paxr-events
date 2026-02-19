@@ -24,6 +24,7 @@ export interface EventData {
   isActive: boolean;
   resaleEnabled: boolean;
   maxResalePrice: string;
+  platformFeePercent: string;
   groupBuyDiscount: string;
 }
 
@@ -222,6 +223,7 @@ export async function getEvent(eventId: number): Promise<EventData | null> {
       isActive: event[12],
       resaleEnabled: event[13],
       maxResalePrice: event[14].toString(),
+      platformFeePercent: event[15].toString(),
       groupBuyDiscount: event[16].toString(),
     };
   } catch {

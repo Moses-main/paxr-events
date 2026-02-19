@@ -11,9 +11,9 @@ export const config = createConfig({
 })
 
 export const CONTRACT_ADDRESSES = {
-  event: import.meta.env.VITE_PAXR_EVENT_ADDRESS || '0xA076ecA49434a4475a9FF716c2E9f20ccc453c20',
-  ticket: import.meta.env.VITE_PAXR_TICKET_ADDRESS || '0x24AaD9a08F7e8C11F3B62a68Acbd5D74D2FfA225',
-  marketplace: import.meta.env.VITE_PAXR_MARKETPLACE_ADDRESS || '0xb0d900AeE4f0D163dB34BAf239f9885F38bD1EDe',
+  event: import.meta.env.VITE_PAXR_EVENT_ADDRESS || '0x9397eBE8d5235fb818736eA8b2c90c3a51c5d278',
+  ticket: import.meta.env.VITE_PAXR_TICKET_ADDRESS || '0x47F40AC7982Fd70f2eCF633e57d2A347a5116289',
+  marketplace: import.meta.env.VITE_PAXR_MARKETPLACE_ADDRESS || '0x4e9A9676B3E24E406a42710A06120561D5A9A045',
 }
 
 export const TOKENS = {
