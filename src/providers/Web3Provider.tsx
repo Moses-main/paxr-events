@@ -9,7 +9,7 @@ const config = createConfig({
   transports: {
     [mainnet.id]: http(),
     [arbitrum.id]: http(),
-    [arbitrumSepolia.id]: http(import.meta.env.VITE_ARBITRUM_SEPOLIA_RPC || 'https://arb-sepolia.g.alchemy.com/v2/demo'),
+    [arbitrumSepolia.id]: http(import.meta.env.VITE_ARBITRUM_SEPOLIA_RPC || 'https://sepolia-rollup.arbitrum.io/rpc'),
   },
 });
 
