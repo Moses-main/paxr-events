@@ -14,23 +14,9 @@ import AnonymousRSVP from "@/components/AnonymousRSVP";
 import Referral from "@/components/Referral";
 import { getEvent, EventData } from "@/lib/alchemy";
 import { useWallet } from "@/hooks/useWallet";
-import { useWriteContract } from "wagmi";
-import { CONTRACT_ADDRESSES } from "@/config/contracts";
 import { toast } from "sonner";
 import { usePrices } from "@/hooks/usePrices";
-
-const TICKET_ABI = [
-  {
-    name: 'mintTicket',
-    type: 'function',
-    inputs: [
-      { name: '_eventId', type: 'uint256' },
-      { name: '_quantity', type: 'uint256' },
-    ],
-    outputs: [],
-    stateMutability: 'payable',
-  },
-] as const;
+import { usePrivyTransaction, EVENT_ABI } from "@/hooks/usePrivyTransaction";
 
 const EventDetail = () => {
   const { id } = useParams();
@@ -42,7 +28,7 @@ const EventDetail = () => {
   const [isMinting, setIsMinting] = useState(false);
   
   const { address, isConnected } = useWallet();
-  const { writeContractAsync } = useWriteContract();
+  const { writeContract, isLoading: isTxLoading } = usePrivyTransaction();
   const { prices } = usePrices();
 
   useEffect(() => {
@@ -72,13 +58,17 @@ const EventDetail = () => {
       const pricePerTicket = BigInt(event.ticketPrice);
       const totalPrice = pricePerTicket * BigInt(quantity);
 
-      const tx = await writeContractAsync({
-        address: CONTRACT_ADDRESSES.ticket as `0x${string}`,
-        abi: TICKET_ABI,
-        functionName: 'mintTicket',
-        args: [BigInt(event.eventId), BigInt(quantity)],
-        value: totalPrice,
-      } as any);
+      const tx = await writeContract(
+        EVENT_ABI,
+        'purchaseTicket',
+        [BigInt(event.eventId), BigInt(quantity)],
+        totalPrice.toString(),
+      );
+
+      if (!tx) {
+        setIsMinting(false);
+        return;
+      }
 
       setShowTracker(true);
       toast.success("Ticket purchase initiated!");
