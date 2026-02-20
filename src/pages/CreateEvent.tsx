@@ -115,7 +115,7 @@ export default function CreateEvent() {
       toast.error('Wallet is still loading, please wait...');
       return;
     }
-    if (!address) {
+    if (!isConnected || !address) {
       toast.error('Please connect your wallet first');
       return;
     }
