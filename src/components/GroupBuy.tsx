@@ -15,6 +15,8 @@ interface GroupBuyProps {
   ticketPrice: string;
   discount: string;
   minGroupSize: number;
+  groupBuyParticipants?: number;
+  groupBuyPooledAmount?: string;
   onJoin?: (amount: string) => Promise<void>;
 }
 
@@ -23,6 +25,8 @@ export default function GroupBuy({
   ticketPrice,
   discount,
   minGroupSize,
+  groupBuyParticipants = 0,
+  groupBuyPooledAmount = '0',
   onJoin
 }: GroupBuyProps) {
   const { isConnected } = useWallet();
@@ -36,9 +40,11 @@ export default function GroupBuy({
   const discountInEth = parseFloat(discount) / 1e18;
   const discountedPrice = priceInEth - discountInEth;
   
-  const mockProgress = 65;
+  const participants = groupBuyParticipants;
+  const pooledUSD = parseFloat(groupBuyPooledAmount) / 1e18 * prices.ETH;
   const targetAmount = priceInUSD * minGroupSize;
-  const currentAmount = (targetAmount * mockProgress) / 100;
+  const progress = Math.min(100, (participants / minGroupSize) * 100);
+  const currentAmount = Math.min(pooledUSD, targetAmount);
 
   const handleJoin = async () => {
     if (!isConnected) {
@@ -102,10 +108,10 @@ export default function GroupBuy({
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Group Progress</span>
-          <span className="font-medium">{mockProgress}%</span>
+          <span className="font-medium">{progress.toFixed(0)}%</span>
         </div>
         
-        <Progress value={mockProgress} className="h-2" />
+        <Progress value={progress} className="h-2" />
         
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>${currentAmount.toFixed(2)} raised</span>

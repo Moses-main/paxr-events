@@ -80,7 +80,7 @@ const MyTickets = () => {
               eventName: event.name,
               eventDate: eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
               location: event.location,
-              imageURI: event.imageURI || "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=250&fit=crop",
+              imageURI: event.imageURI,
               purchasePrice: ticketData.purchasePrice,
               purchaseTime: ticketData.purchaseTime,
               isUsed: ticketData.isUsed,

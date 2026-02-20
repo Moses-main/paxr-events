@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { usePrices } from "@/hooks/usePrices";
 
 interface MoonPayButtonProps {
   walletAddress: string;
@@ -27,6 +28,7 @@ const MoonPayButton: React.FC<MoonPayButtonProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState(defaultCryptoAmount.toString());
   const [isLoading, setIsLoading] = useState(false);
+  const { prices } = usePrices();
 
   const moonPayApiKey = import.meta.env.VITE_MOONPAY_PUBLIC_KEY;
   
@@ -108,7 +110,7 @@ const MoonPayButton: React.FC<MoonPayButtonProps> = ({
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Estimated ETH</span>
-              <span>~{amount ? (parseFloat(amount) / 2500).toFixed(6) : "0"} ETH</span>
+              <span>~{amount ? (parseFloat(amount) / prices.ETH).toFixed(6) : "0"} ETH</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Network</span>

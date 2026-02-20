@@ -43,7 +43,7 @@ const Communities = () => {
           description: event.description || `Official community for ${event.name}. Get updates, meet other attendees, and share experiences!`,
           eventId: event.eventId,
           eventName: event.name,
-          memberCount: event.ticketsSold > 0 ? event.ticketsSold : Math.floor(Math.random() * 500) + 50,
+          memberCount: event.ticketsSold,
           isVerified: true,
           isOrganizer: event.organizer !== "0x0000000000000000000000000000000000000000",
           lastActivity: event.eventDate > now ? "Upcoming" : "Past event",

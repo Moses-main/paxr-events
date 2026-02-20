@@ -20,7 +20,7 @@ const steps: { key: TxStep; label: string }[] = [
   { key: "complete", label: "Complete" },
 ];
 
-const TransactionTracker = ({ isOpen, onClose, txHash = "0x8a7f...3e2d", eventTitle = "Event", ticketTier = "General", price = "0.05 ETH" }: TransactionTrackerProps) => {
+const TransactionTracker = ({ isOpen, onClose, txHash, eventTitle = "Event", ticketTier = "General", price }: TransactionTrackerProps) => {
   const [currentStep, setCurrentStep] = useState<TxStep>("confirming");
   const [copied, setCopied] = useState(false);
 
