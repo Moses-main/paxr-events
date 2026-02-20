@@ -27,3 +27,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Contracts
+contracts/.deps/
+contracts/broadcast/
+contracts/cache/
+contracts/out/
+contracts/.github/
+contracts/.gitignore
