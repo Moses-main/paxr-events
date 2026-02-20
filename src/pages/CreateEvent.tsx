@@ -14,11 +14,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { uploadToIPFS } from '@/lib/ipfs';
-import { arbitrumSepolia } from 'wagmi/chains';
-import { useWriteContract, useWaitForTransactionReceipt, useBalance } from 'wagmi';
+import { useBalance } from 'wagmi';
 import { useWallet } from '@/hooks/useWallet';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { usePrices } from '@/hooks/usePrices';
+import { usePrivyTransaction, EVENT_ABI } from '@/hooks/usePrivyTransaction';
 
 const eventSchema = z.object({
   name: z.string().min(3, 'Event name must be at least 3 characters'),
@@ -35,40 +35,16 @@ const eventSchema = z.object({
 
 type EventFormData = z.infer<typeof eventSchema>;
 
-const EVENT_ABI = [
-  {
-    name: 'createEvent',
-    type: 'function',
-    inputs: [
-      { name: '_name', type: 'string' },
-      { name: '_description', type: 'string' },
-      { name: '_imageURI', type: 'string' },
-      { name: '_location', type: 'string' },
-      { name: '_ticketPrice', type: 'uint256' },
-      { name: '_totalTickets', type: 'uint256' },
-      { name: '_eventDate', type: 'uint256' },
-      { name: '_saleStartTime', type: 'uint256' },
-      { name: '_saleEndTime', type: 'uint256' },
-      { name: '_paymentToken', type: 'address' },
-      { name: '_resaleEnabled', type: 'bool' },
-      { name: '_maxResalePrice', type: 'uint256' },
-      { name: '_groupBuyDiscount', type: 'uint256' },
-    ],
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'nonpayable',
-  },
-] as const;
-
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export default function CreateEvent() {
   const navigate = useNavigate();
   const { address, chainId, switchNetwork } = useWallet();
-  const { writeContractAsync } = useWriteContract();
+  const { writeContract, isLoading: isTxLoading } = usePrivyTransaction();
   const { prices } = usePrices();
   const { data: balance } = useBalance({
     address: address as `0x${string}`,
-    chainId: arbitrumSepolia.id,
+    chainId: 421614,
     query: { enabled: !!address }
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -141,9 +117,9 @@ export default function CreateEvent() {
     }
 
     // Check if user is on Arbitrum Sepolia
-    if (chainId !== arbitrumSepolia.id) {
+    if (chainId !== 421614) {
       toast.error('Please switch to Arbitrum Sepolia testnet to create events');
-      await switchNetwork(arbitrumSepolia.id);
+      await switchNetwork(421614);
       return;
     }
 
@@ -178,12 +154,10 @@ export default function CreateEvent() {
         ? BigInt(Math.floor(parseFloat(data.groupBuyDiscount) * 100))
         : BigInt(0);
 
-      const tx = await writeContractAsync({
-        address: CONTRACT_ADDRESSES.event as `0x${string}`,
-        abi: EVENT_ABI,
-        functionName: 'createEvent',
-        chain: arbitrumSepolia,
-        args: [
+      const tx = await writeContract(
+        EVENT_ABI,
+        'createEvent',
+        [
           data.name,
           data.description,
           uploadedImageURI,
@@ -197,9 +171,13 @@ export default function CreateEvent() {
           resaleEnabled,
           maxResalePriceWei,
           groupBuyDiscountBps,
-        ],
-        gas: BigInt(500000),
-      } as any);
+        ]
+      );
+
+      if (!tx) {
+        setIsLoading(false);
+        return;
+      }
 
       setTxHash(tx);
       toast.success('Event created successfully!');
@@ -291,7 +269,7 @@ export default function CreateEvent() {
             </p>
           </div>
 
-          {chainId !== arbitrumSepolia.id && (
+          {chainId !== 421614 && (
             <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
@@ -299,7 +277,7 @@ export default function CreateEvent() {
                   <p className="text-xs text-muted-foreground">Please switch to Arbitrum Sepolia testnet to create events</p>
                 </div>
                 <Button
-                  onClick={() => switchNetwork(arbitrumSepolia.id)}
+                  onClick={() => switchNetwork(421614)}
                   size="sm"
                   className="bg-red-600 hover:bg-red-700 text-white"
                 >

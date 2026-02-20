@@ -1,4 +1,4 @@
-- [ ] Optimize initial load: implement code-splitting, lazy loading, and critical CSS
+- [x] Optimize initial load: implement code-splitting, lazy loading, and critical CSS
 - [ ] Basic unit tests: add a couple of smoke tests for key components (Header, Marketplace)
 - [ ] End-to-end test skeleton: set up Cypress/Playwright scaffolding
 - [ ] CI: add frontend workflow to build and test on PRs

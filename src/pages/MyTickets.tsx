@@ -16,10 +16,9 @@ import Footer from "@/components/Footer";
 import AttendanceProof from "@/components/AttendanceProof";
 import { useWallet } from "@/hooks/useWallet";
 import { getUserTickets, getTicketData, getEvent, getListing } from "@/lib/alchemy";
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { toast } from "sonner";
-import { CONTRACT_ADDRESSES } from "@/config/contracts";
 import { usePrices } from "@/hooks/usePrices";
+import { usePrivyTransaction, TICKET_ABI, MARKETPLACE_ABI } from "@/hooks/usePrivyTransaction";
 
 interface TicketNFT {
   tokenId: number;
@@ -36,45 +35,9 @@ interface TicketNFT {
   chain: string;
 }
 
-const TICKET_ABI = [
-  {
-    name: 'transferFrom',
-    type: 'function',
-    inputs: [
-      { name: 'from', type: 'address' },
-      { name: 'to', type: 'address' },
-      { name: 'tokenId', type: 'uint256' },
-    ],
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-] as const;
-
-const MARKETPLACE_ABI = [
-  {
-    name: 'listTicket',
-    type: 'function',
-    inputs: [
-      { name: 'tokenId', type: 'uint256' },
-      { name: 'price', type: 'uint256' },
-    ],
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-  {
-    name: 'cancelListing',
-    type: 'function',
-    inputs: [
-      { name: 'tokenId', type: 'uint256' },
-    ],
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-] as const;
-
 const MyTickets = () => {
   const { address, isConnected } = useWallet();
-  const { writeContractAsync } = useWriteContract();
+  const { writeContract, isLoading: isTxLoading } = usePrivyTransaction();
   const { prices } = usePrices();
   
   const [tickets, setTickets] = useState<TicketNFT[]>([]);
@@ -142,13 +105,17 @@ const MyTickets = () => {
     if (!selectedTicket || !transferAddress) return;
     setIsSubmitting(true);
     try {
-      const tx = await writeContractAsync({
-        address: CONTRACT_ADDRESSES.ticket as `0x${string}`,
-        abi: TICKET_ABI,
-        functionName: 'transferFrom',
-        args: [address as `0x${string}`, transferAddress as `0x${string}`, BigInt(selectedTicket.tokenId)],
-      });
+      const tx = await writeContract(
+        TICKET_ABI,
+        'transferFrom',
+        [address as `0x${string}`, transferAddress as `0x${string}`, BigInt(selectedTicket.tokenId)],
+      );
       
+      if (!tx) {
+        setIsSubmitting(false);
+        return;
+      }
+
       toast.success("Ticket transferred successfully!");
       setShowTransfer(false);
       setTransferAddress("");
@@ -174,12 +141,16 @@ const MyTickets = () => {
         return;
       }
 
-      const tx = await writeContractAsync({
-        address: CONTRACT_ADDRESSES.marketplace as `0x${string}`,
-        abi: MARKETPLACE_ABI,
-        functionName: 'listTicket',
-        args: [BigInt(selectedTicket.tokenId), priceInWei],
-      });
+      const tx = await writeContract(
+        MARKETPLACE_ABI,
+        'listTicket',
+        [BigInt(selectedTicket.tokenId), priceInWei],
+      );
+
+      if (!tx) {
+        setIsSubmitting(false);
+        return;
+      }
       
       toast.success("Ticket listed for resale!");
       setShowResell(false);
