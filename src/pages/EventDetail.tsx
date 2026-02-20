@@ -27,7 +27,7 @@ const EventDetail = () => {
   const [liked, setLiked] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
   
-  const { address, isConnected } = useWallet();
+  const { address, isConnected, isReady } = useWallet();
   const { writeContract, isLoading: isTxLoading } = usePrivyTransaction();
   const { prices } = usePrices();
 
@@ -48,7 +48,11 @@ const EventDetail = () => {
   }, [id]);
 
   const handleBuyTicket = async () => {
-    if (!isConnected || !address || !event) {
+    if (!isReady) {
+      toast.error("Wallet is still loading, please wait...");
+      return;
+    }
+    if (!address || !event) {
       toast.error("Please connect your wallet first");
       return;
     }

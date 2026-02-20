@@ -23,15 +23,17 @@ const SUPPORTED_CHAINS = [
 ];
 
 export function useWallet(): WalletState {
-  const { login, logout, user } = usePrivy();
+  const { login, logout, user, ready: privyReady } = usePrivy();
   const { address, chainId, isConnected: wagmiConnected } = useAccount();
   const { disconnect: wagmiDisconnect } = useDisconnect();
   
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    setIsReady(true);
-  }, []);
+    if (privyReady) {
+      setIsReady(true);
+    }
+  }, [privyReady]);
 
   const connectWallet = async () => {
     try {
@@ -81,7 +83,7 @@ export function useWallet(): WalletState {
 
   const privyAddress = user?.wallet?.address;
   const walletAddress = privyAddress || address || null;
-  const isConnected = !!(privyAddress || wagmiConnected);
+  const isConnected = !!(privyAddress || (wagmiConnected && address));
 
   const linkedAccounts: { address: string; type: string; walletClientType: string }[] = [];
   if (user?.linkedAccounts) {

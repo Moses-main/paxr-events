@@ -39,7 +39,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export default function CreateEvent() {
   const navigate = useNavigate();
-  const { address, chainId, switchNetwork, isConnected } = useWallet();
+  const { address, chainId, switchNetwork, isConnected, isReady } = useWallet();
   const { writeContract, isLoading: isTxLoading } = usePrivyTransaction();
   const { prices } = usePrices();
   const { data: balance } = useBalance({
@@ -111,7 +111,11 @@ export default function CreateEvent() {
   };
 
   const onSubmit = async (data: EventFormData) => {
-    if (!isConnected || !address) {
+    if (!isReady) {
+      toast.error('Wallet is still loading, please wait...');
+      return;
+    }
+    if (!address) {
       toast.error('Please connect your wallet first');
       return;
     }
