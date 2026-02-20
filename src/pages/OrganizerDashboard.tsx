@@ -321,13 +321,39 @@ const OrganizerDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Activity className="h-5 w-5 text-primary" />
-                    Sales Over Time
+                    Sales Overview
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-64 flex items-center justify-center text-muted-foreground">
-                    Chart visualization would go here
-                  </div>
+                  {events.length > 0 ? (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Total Revenue</p>
+                          <p className="text-2xl font-bold text-foreground">{analytics?.totalRevenue || "$0"}</p>
+                        </div>
+                        <DollarSign className="h-8 w-8 text-green-500" />
+                      </div>
+                      <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Total Tickets Sold</p>
+                          <p className="text-2xl font-bold text-foreground">{analytics?.totalTicketsSold || 0}</p>
+                        </div>
+                        <Ticket className="h-8 w-8 text-blue-500" />
+                      </div>
+                      <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Average Ticket Price</p>
+                          <p className="text-2xl font-bold text-foreground">{analytics?.averageTicketPrice || "$0"}</p>
+                        </div>
+                        <TrendingUp className="h-8 w-8 text-purple-500" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-64 flex items-center justify-center text-muted-foreground">
+                      No analytics data available yet
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -335,56 +361,58 @@ const OrganizerDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <DollarSign className="h-5 w-5 text-primary" />
-                    Payment Analytics
+                    Revenue Breakdown
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total Revenue</p>
-                      <p className="text-2xl font-bold text-foreground">{analytics?.totalRevenue || "$0"}</p>
+                  {events.length > 0 ? (
+                    <>
+                      <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Total Events</p>
+                          <p className="text-2xl font-bold text-foreground">{analytics?.totalEvents || 0}</p>
+                        </div>
+                        <Calendar className="h-8 w-8 text-copper" />
+                      </div>
+                      <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Active Events</p>
+                          <p className="text-2xl font-bold text-foreground">
+                            {events.filter(e => e.status === "active").length}
+                          </p>
+                        </div>
+                        <Activity className="h-8 w-8 text-green-500" />
+                      </div>
+                      <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Upcoming Events</p>
+                          <p className="text-2xl font-bold text-foreground">
+                            {events.filter(e => e.status === "upcoming").length}
+                          </p>
+                        </div>
+                        <Calendar className="h-8 w-8 text-blue-500" />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="h-32 flex items-center justify-center text-muted-foreground">
+                      No revenue data yet
                     </div>
-                    <TrendingUp className="h-8 w-8 text-green-500" />
-                  </div>
-                  <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Platform Fees</p>
-                      <p className="text-2xl font-bold text-foreground">$775</p>
-                      <p className="text-sm text-muted-foreground">This Month</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">$30,350</p>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
 
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle>Dune Analytics</CardTitle>
-                <CardDescription>Real-time blockchain analytics</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
-                      <BarChart3 className="h-6 w-6 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">Paxr Dashboard</p>
-                      <p className="text-sm text-muted-foreground">Track platform-wide metrics</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="gap-2">
-                    View on Dune <ExternalLink className="h-4 w-4" />
+            {events.length === 0 && (
+              <Card className="border-border">
+                <CardContent className="py-12 text-center">
+                  <BarChart3 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground mb-4">Create events to see analytics</p>
+                  <Button asChild className="bg-gradient-copper hover:opacity-90">
+                    <Link to="/create">Create Event</Link>
                   </Button>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Connect your Dune API key in settings to enable real-time analytics
-                </p>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
