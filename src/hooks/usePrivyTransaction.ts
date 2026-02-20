@@ -9,7 +9,10 @@ interface TransactionRequest {
   to: string;
   data?: string;
   value?: string;
+  chainId?: number;
 }
+
+const TARGET_CHAIN_ID = arbitrumSepolia.id;
 
 export function usePrivyTransaction() {
   const { user, sendTransaction } = usePrivy();
@@ -39,6 +42,7 @@ export function usePrivyTransaction() {
       const tx: TransactionRequest = {
         to: CONTRACT_ADDRESSES.event,
         data,
+        chainId: TARGET_CHAIN_ID,
       };
 
       if (value) {
