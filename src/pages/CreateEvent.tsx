@@ -150,9 +150,11 @@ export default function CreateEvent() {
         }
       }
 
-      const ticketPriceWei = BigInt(Math.floor(parseFloat(data.ticketPrice) * 1e18));
+      const ethPrice = prices.ETH || 2500;
+      const ticketPriceInEth = parseFloat(data.ticketPrice) / ethPrice;
+      const ticketPriceWei = BigInt(Math.floor(ticketPriceInEth * 1e18));
       const maxResalePriceWei = resaleEnabled && data.maxResalePrice 
-        ? BigInt(Math.floor(parseFloat(data.maxResalePrice) * 1e18))
+        ? BigInt(Math.floor(parseFloat(data.maxResalePrice) / ethPrice * 1e18))
         : BigInt(0);
       const groupBuyDiscountBps = groupBuyEnabled && data.groupBuyDiscount 
         ? BigInt(Math.floor(parseFloat(data.groupBuyDiscount) * 100))
