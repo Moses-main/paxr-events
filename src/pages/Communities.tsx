@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Background from "@/components/Background";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAllEvents, EventData } from "@/lib/alchemy";
 
@@ -86,7 +87,7 @@ const Communities = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <Background>
       <Navbar />
 
       <div className="container mx-auto px-6 pt-28 pb-24">
@@ -240,7 +241,7 @@ const Communities = () => {
       </div>
 
       <Footer />
-    </div>
+    </Background>
   );
 };
 

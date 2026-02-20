@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Background from "@/components/Background";
 import AttendanceProof from "@/components/AttendanceProof";
 import { useWallet } from "@/hooks/useWallet";
 import { getUserTickets, getTicketData, getEvent, getListing } from "@/lib/alchemy";
@@ -242,7 +243,7 @@ const MyTickets = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <Background>
       <Navbar />
 
       <div className="container mx-auto px-6 pt-28 pb-24">
@@ -429,7 +430,7 @@ const MyTickets = () => {
       </Dialog>
 
       <Footer />
-    </div>
+    </Background>
   );
 };
 

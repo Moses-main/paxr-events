@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Background from "@/components/Background";
 import { useWallet } from "@/hooks/useWallet";
 import { getAllEvents, EventData } from "@/lib/alchemy";
 import { usePrices } from "@/hooks/usePrices";
@@ -114,7 +115,7 @@ const OrganizerDashboard = () => {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-background">
+      <Background>
         <Navbar />
         <div className="container mx-auto px-6 pt-40 pb-24 text-center">
           <Wallet className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -124,12 +125,12 @@ const OrganizerDashboard = () => {
           </p>
         </div>
         <Footer />
-      </div>
+      </Background>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <Background>
       <Navbar />
 
       <div className="container mx-auto px-6 pt-28 pb-24">
@@ -418,7 +419,7 @@ const OrganizerDashboard = () => {
       </div>
 
       <Footer />
-    </div>
+    </Background>
   );
 };
 

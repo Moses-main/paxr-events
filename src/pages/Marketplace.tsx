@@ -1,26 +1,14 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-  Shield,
-  AlertTriangle,
-  Clock,
-  TrendingUp,
-  Search,
-  Filter,
-  Check,
-  Lock,
-  Loader2,
-  Calendar,
-  MapPin,
-  Ticket,
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { Search, Filter, Shield, MapPin, Calendar, Users, ArrowRight, Loader2, Ticket, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { getAllEvents, EventData } from "@/lib/alchemy";
+import Background from "@/components/Background";
+import { getActiveEvents, getAllEvents, EventData } from "@/lib/alchemy";
 import { usePrices } from "@/hooks/usePrices";
 
 const Marketplace = () => {
@@ -79,7 +67,7 @@ const Marketplace = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <Background>
       <Navbar />
 
       <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-28 pb-16 md:pb-24">
@@ -212,7 +200,7 @@ const Marketplace = () => {
         )}
       </div>
       <Footer />
-    </div>
+    </Background>
   );
 };
 
