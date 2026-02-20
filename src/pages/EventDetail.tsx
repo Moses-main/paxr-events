@@ -48,7 +48,7 @@ const EventDetail = () => {
   }, [id]);
 
   const handleBuyTicket = async () => {
-    if (!address || !event) {
+    if (!isConnected || !address || !event) {
       toast.error("Please connect your wallet first");
       return;
     }

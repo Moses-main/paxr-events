@@ -39,7 +39,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export default function CreateEvent() {
   const navigate = useNavigate();
-  const { address, chainId, switchNetwork } = useWallet();
+  const { address, chainId, switchNetwork, isConnected } = useWallet();
   const { writeContract, isLoading: isTxLoading } = usePrivyTransaction();
   const { prices } = usePrices();
   const { data: balance } = useBalance({
@@ -111,7 +111,7 @@ export default function CreateEvent() {
   };
 
   const onSubmit = async (data: EventFormData) => {
-    if (!address) {
+    if (!isConnected || !address) {
       toast.error('Please connect your wallet first');
       return;
     }
