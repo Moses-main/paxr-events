@@ -10,6 +10,7 @@ export interface EventMetadata {
   location: string;
   eventDate: string;
   ticketPrice: string;
+  ticketPriceUSD: string;
   totalTickets: number;
   organizer: string;
   external_url?: string;

@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { uploadToIPFS } from '@/lib/ipfs';
+import { uploadToIPFS, uploadEventMetadata } from '@/lib/ipfs';
 import { useBalance } from 'wagmi';
 import { useWallet } from '@/hooks/useWallet';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
@@ -159,6 +159,25 @@ export default function CreateEvent() {
       const groupBuyDiscountBps = groupBuyEnabled && data.groupBuyDiscount 
         ? BigInt(Math.floor(parseFloat(data.groupBuyDiscount) * 100))
         : BigInt(0);
+
+      const metadata = {
+        name: data.name,
+        description: data.description,
+        image: uploadedImageURI,
+        location: data.location,
+        eventDate: new Date(data.eventDate).toISOString(),
+        ticketPrice: ticketPriceWei.toString(),
+        ticketPriceUSD: data.ticketPrice,
+        totalTickets: parseInt(data.totalTickets),
+        organizer: address || '',
+      };
+
+      let metadataURI = '';
+      try {
+        metadataURI = await uploadEventMetadata(metadata) || '';
+      } catch (metaError) {
+        console.error('Metadata upload failed:', metaError);
+      }
 
       const tx = await writeContract(
         EVENT_ABI,
