@@ -101,7 +101,7 @@ const EventDetail = () => {
 
   const formatPrice = (price: string) => {
     const eth = parseFloat(price) / 1e18;
-    const usd = eth * prices.ETH;
+    const usd = eth * (prices.ETH || 2500);
     return `$${usd.toFixed(2)}`;
   };
 
@@ -164,7 +164,7 @@ const EventDetail = () => {
         onClose={() => setShowTracker(false)}
         eventTitle={event.name}
         ticketTier="General Admission"
-        price={`$${(parseFloat(totalPrice) * prices.ETH).toFixed(2)}`}
+        price={`$${(parseFloat(totalPrice) * (prices.ETH || 2500)).toFixed(2)}`}
       />
 
       {/* Hero Banner */}
@@ -278,7 +278,7 @@ const EventDetail = () => {
               <div className="flex justify-between items-center mb-3 md:mb-4 pb-3 md:pb-4 border-b border-border">
                 <span className="text-sm md:text-base text-muted-foreground">Total</span>
                 <span className="font-display text-lg md:text-xl font-bold text-foreground">
-                  ${(parseFloat(totalPrice) * prices.ETH).toFixed(2)}
+                  ${(parseFloat(totalPrice) * (prices.ETH || 2500)).toFixed(2)}
                 </span>
               </div>
 

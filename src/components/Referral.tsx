@@ -33,9 +33,9 @@ export default function Referral({ eventId, eventName }: ReferralProps) {
   const { prices } = usePrices();
   
   const [stats] = useState<ReferralStats>({
-    totalReferrals: 12,
-    successfulReferrals: 8,
-    pendingRewards: 0.04,
+    totalReferrals: 0,
+    successfulReferrals: 0,
+    pendingRewards: 0,
   });
 
   const pendingRewardsUSD = (stats.pendingRewards * prices.ETH).toFixed(2);
