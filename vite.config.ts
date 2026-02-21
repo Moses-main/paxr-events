@@ -43,11 +43,11 @@ export default defineConfig(({ mode }) => ({
           "vendor-charts": ["recharts"],
         },
       },
-      external: ["@privy-io/wagmi"],
+      external: [],
     },
     chunkSizeWarningLimit: 1000,
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "viem", "wagmi"],
+    include: ["react", "react-dom", "viem", "wagmi", "@privy-io/wagmi"],
   },
 }));
