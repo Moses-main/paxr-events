@@ -125,13 +125,26 @@ const MyTickets = () => {
       toast.error("Please enter a valid Ethereum address");
       return;
     }
+
+    const walletAddress = address;
+    if (!walletAddress) {
+      toast.error("Wallet not connected");
+      return;
+    }
     
     setIsSubmitting(true);
     try {
+      console.log("Transferring ticket:", {
+        from: walletAddress,
+        to: transferAddress,
+        tokenId: selectedTicket.tokenId,
+        ticketContract: CONTRACT_ADDRESSES.ticket
+      });
+      
       const tx = await writeContract(
         TICKET_ABI,
-        'safeTransferFrom',
-        [address as `0x${string}`, transferAddress as `0x${string}`, BigInt(selectedTicket.tokenId)],
+        'transferFrom',
+        [walletAddress, transferAddress, BigInt(selectedTicket.tokenId)],
         undefined,
         CONTRACT_ADDRESSES.ticket
       );
@@ -443,12 +456,12 @@ const MyTickets = () => {
               This action cannot be undone.
             </p>
           </div>
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-3 mt-6">
             <Button variant="outline" onClick={() => { setShowTransfer(false); setTransferAddress(""); }}>Cancel</Button>
             <Button 
               onClick={handleTransfer} 
               disabled={isSubmitting}
-              className="bg-copper-500 hover:bg-copper-600"
+              style={{ backgroundColor: '#B87333', color: 'white' }}
             >
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
               Transfer
@@ -479,12 +492,12 @@ const MyTickets = () => {
               className="mt-2"
             />
           </div>
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-3 mt-6">
             <Button variant="outline" onClick={() => { setShowResell(false); setResellPrice(""); }}>Cancel</Button>
             <Button 
               onClick={handleResell} 
               disabled={isSubmitting}
-              className="bg-copper-500 hover:bg-copper-600"
+              style={{ backgroundColor: '#B87333', color: 'white' }}
             >
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowLeftRight className="h-4 w-4 mr-2" />}
               List Ticket

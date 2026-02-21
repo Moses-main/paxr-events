@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { usePrivy, useSendTransaction, useWallets } from '@privy-io/react-auth';
-import { encodeFunctionData, parseEther } from 'viem';
+import { encodeFunctionData, parseEther, createWalletClient, custom, http } from 'viem';
+import { arbitrumSepolia } from 'viem/chains';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { toast } from 'sonner';
 
@@ -9,7 +10,7 @@ const TARGET_CHAIN_ID = 421614; // Arbitrum Sepolia
 export function usePrivyTransaction() {
   const { user } = usePrivy();
   const { wallets } = useWallets();
-  const { sendTransaction } = useSendTransaction();
+  const { sendTransaction: privySendTransaction } = useSendTransaction();
   const [isLoading, setIsLoading] = useState(false);
 
   const address = user?.wallet?.address;
@@ -36,6 +37,41 @@ export function usePrivyTransaction() {
     return true;
   }, [wallets]);
 
+  const sendTransaction = useCallback(async (params: {
+    to: string;
+    data?: string;
+    value?: bigint;
+  }): Promise<string | null> => {
+    const wallet = wallets[0];
+    if (!wallet) {
+      toast.error('No wallet connected');
+      return null;
+    }
+
+    try {
+      const provider = await wallet.getEthereumProvider();
+      
+      const walletClient = createWalletClient({
+        chain: arbitrumSepolia,
+        transport: custom(provider),
+      });
+
+      const tx = await walletClient.sendTransaction({
+        to: params.to as `0x${string}`,
+        data: params.data as `0x${string}` | undefined,
+        value: params.value,
+        account: wallet.address as `0x${string}`,
+      });
+
+      return tx;
+    } catch (error: any) {
+      console.error('Transaction failed:', error);
+      const errorMsg = error?.shortMessage || error?.message || 'Transaction failed';
+      toast.error(errorMsg);
+      return null;
+    }
+  }, [wallets]);
+
   const writeContract = useCallback(async (
     abi: readonly any[],
     functionName: string,
@@ -46,6 +82,12 @@ export function usePrivyTransaction() {
     const isConnected = !!address || wallets.length > 0;
     if (!isConnected) {
       toast.error('Please connect your wallet first');
+      return null;
+    }
+
+    const wallet = wallets[0];
+    if (!wallet) {
+      toast.error('No wallet connected');
       return null;
     }
 
@@ -73,14 +115,14 @@ export function usePrivyTransaction() {
       });
 
       const tx = await sendTransaction({
-        to: targetAddress as `0x${string}`,
+        to: targetAddress,
         data,
         value: value ? parseEther(value) : undefined,
       });
 
       if (tx) {
         toast.success('Transaction sent! Waiting for confirmation...');
-        return tx.hash;
+        return tx;
       }
       
       toast.error('Transaction failed');
@@ -161,6 +203,17 @@ export const TICKET_ABI = [
   },
   {
     name: 'safeTransferFrom',
+    type: 'function',
+    inputs: [
+      { name: 'from', type: 'address' },
+      { name: 'to', type: 'address' },
+      { name: 'tokenId', type: 'uint256' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    name: 'transferFrom',
     type: 'function',
     inputs: [
       { name: 'from', type: 'address' },
