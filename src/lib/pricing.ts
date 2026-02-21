@@ -12,7 +12,7 @@ async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
 export async function getETHUSDPrice(): Promise<number> {
   try {
     const urls = [
-      'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd',
+      '/api/coingecko/simple/price?ids=ethereum&vs_currencies=usd',
       'https://api.coinbase.com/v2/prices/ETH-USD/spot',
     ];
     

@@ -8,8 +8,8 @@ contract CreateTestEvent is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         
-        // Already deployed event contract
-        address eventAddress = 0x9397eBE8d5235fb818736eA8b2c90c3a51c5d278;
+        // New deployed event contract
+        address eventAddress = 0x3b8031f14005c38ECcAC22949d426F279A661690;
         
         vm.startBroadcast(deployerPrivateKey);
         
@@ -20,18 +20,19 @@ contract CreateTestEvent is Script {
         
         console.log("Current block timestamp:", currentTime);
         
-        // Set saleStartTime to 60 seconds in the past to definitely be in the past
-        uint256 saleStartTime = currentTime - 60;
+        // Set saleStartTime to current time (so sale starts immediately)
+        uint256 saleStartTime = currentTime;
         
         uint256 eventId = eventContract.createEvent(
             "Web3 Hackathon Lagos",           // name
             "Join us for the biggest Web3 hackathon in Nigeria. Build the future of decentralized apps!", // description
-            "",                                // imageURI (empty for now)
+            "https://example.com/event-image.png", // imageURI
             "Lagos, Nigeria",                  // location
             10000000000000000,                // ticketPrice (0.01 ETH in wei)
+            25,                               // ticketPriceUSD ($25)
             100,                               // totalTickets
             currentTime + 7 days,              // eventDate (7 days from now)
-            saleStartTime,                     // saleStartTime (60 seconds in the PAST)
+            currentTime,                        // saleStartTime (starts immediately)
             currentTime + 30 days,             // saleEndTime (30 days from now)
             address(0),                        // paymentToken (ETH)
             true,                              // resaleEnabled

@@ -24,6 +24,8 @@ const EventDetail = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [showTracker, setShowTracker] = useState(false);
+  const [txHash, setTxHash] = useState<string>("");
+  const [txError, setTxError] = useState<string>("");
   const [liked, setLiked] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
   
@@ -47,38 +49,51 @@ const EventDetail = () => {
     fetchEvent();
   }, [id]);
 
+  const handleCloseTracker = () => {
+    setShowTracker(false);
+    setTxHash("");
+    setTxError("");
+  };
+
   const handleBuyTicket = async () => {
     if (!isReady) {
       toast.error("Wallet is still loading, please wait...");
       return;
     }
-    if (!address || !event) {
+    if (!isConnected || !address || !event) {
       toast.error("Please connect your wallet first");
       return;
     }
 
     setIsMinting(true);
+    setTxError("");
     try {
       const pricePerTicket = BigInt(event.ticketPrice);
-      const totalPrice = pricePerTicket * BigInt(quantity);
+      const totalPriceWei = pricePerTicket * BigInt(quantity);
+      const totalPriceEth = Number(totalPriceWei) / 1e18;
 
       const tx = await writeContract(
         EVENT_ABI,
         'purchaseTicket',
         [BigInt(event.eventId), BigInt(quantity)],
-        '0x' + totalPrice.toString(16),
+        totalPriceEth.toString(),
       );
 
       if (!tx) {
         setIsMinting(false);
+        setTxError("Transaction was rejected");
+        setShowTracker(true);
         return;
       }
 
+      setTxHash(tx);
       setShowTracker(true);
       toast.success("Ticket purchase initiated!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to buy ticket:", error);
-      toast.error("Failed to purchase ticket");
+      const errorMsg = error?.shortMessage || error?.message || "Failed to purchase ticket";
+      setTxError(errorMsg);
+      setShowTracker(true);
     } finally {
       setIsMinting(false);
     }
@@ -152,10 +167,13 @@ const EventDetail = () => {
   }
 
   const status = getStatus();
-  const pricePerTicket = formatPrice(event.ticketPrice);
-  const pricePerTicketUSD = (parseFloat(event.ticketPrice) / 1e18 * (prices.ETH || 2500));
-  const totalPriceUSD = (pricePerTicketUSD * quantity).toFixed(2);
-  const totalPriceETH = (parseFloat(event.ticketPrice) / 1e18 * quantity).toFixed(6);
+  const pricePerTicketUSD = event.ticketPriceUSD && parseFloat(event.ticketPriceUSD) > 0 
+    ? (parseFloat(event.ticketPriceUSD)).toFixed(2) 
+    : (parseFloat(event.ticketPrice) / 1e18 * (prices.ETH || 2500)).toFixed(2);
+  const totalPriceUSD = event.ticketPriceUSD && parseFloat(event.ticketPriceUSD) > 0 
+    ? (parseFloat(event.ticketPriceUSD) * quantity).toFixed(2) 
+    : (parseFloat(event.ticketPrice) / 1e18 * (prices.ETH || 2500) * quantity).toFixed(2);
+  const pricePerTicket = `$${pricePerTicketUSD}`;
   const availableTickets = event.totalTickets - event.ticketsSold;
 
   return (
@@ -163,7 +181,9 @@ const EventDetail = () => {
       <Navbar />
       <TransactionTracker
         isOpen={showTracker}
-        onClose={() => setShowTracker(false)}
+        onClose={handleCloseTracker}
+        txHash={txHash}
+        error={txError}
         eventTitle={event.name}
         ticketTier="General Admission"
         price={`$${totalPriceUSD}`}

@@ -19,6 +19,7 @@ contract PaxrEvent is Ownable, ReentrancyGuard {
         string imageURI;
         string location;
         uint256 ticketPrice;
+        uint256 ticketPriceUSD;
         uint256 totalTickets;
         uint256 ticketsSold;
         uint256 eventDate;
@@ -82,12 +83,17 @@ contract PaxrEvent is Ownable, ReentrancyGuard {
         ticketNFT = new PaxrTicket(initialOwner);
     }
 
+    function initialize() external onlyOwner {
+        ticketNFT.setEventContract(address(this));
+    }
+
     function createEvent(
         string memory name,
         string memory description,
         string memory imageURI,
         string memory location,
         uint256 ticketPrice,
+        uint256 ticketPriceUSD,
         uint256 totalTickets,
         uint256 eventDate,
         uint256 saleStartTime,
@@ -99,7 +105,7 @@ contract PaxrEvent is Ownable, ReentrancyGuard {
     ) external returns (uint256) {
         require(totalTickets > 0, "Must have tickets");
         require(saleEndTime > saleStartTime, "Invalid sale window");
-        require(saleStartTime >= block.timestamp, "Sale must start in future");
+        require(saleEndTime > block.timestamp, "Sale must end in future");
 
         // Prevent group buy discount from exceeding ticket price
         if (groupBuyDiscount > 0) {
@@ -115,6 +121,7 @@ contract PaxrEvent is Ownable, ReentrancyGuard {
             imageURI: imageURI,
             location: location,
             ticketPrice: ticketPrice,
+            ticketPriceUSD: ticketPriceUSD,
             totalTickets: totalTickets,
             ticketsSold: 0,
             eventDate: eventDate,
@@ -351,6 +358,17 @@ contract PaxrEvent is Ownable, ReentrancyGuard {
         evt.resaleEnabled = resaleEnabled;
         evt.maxResalePrice = maxResalePrice;
 
+        emit EventUpdated(eventId);
+    }
+
+    function updateTicketPrice(uint256 eventId, uint256 _ticketPrice, uint256 _ticketPriceUSD) external {
+        require(eventExists[eventId], "Event does not exist");
+        Event storage evt = events[eventId];
+        require(msg.sender == evt.organizer, "Not organizer");
+        
+        evt.ticketPrice = _ticketPrice;
+        evt.ticketPriceUSD = _ticketPriceUSD;
+        
         emit EventUpdated(eventId);
     }
 

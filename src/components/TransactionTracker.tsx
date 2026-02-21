@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, ExternalLink, Copy, X } from "lucide-react";
 
@@ -11,6 +11,7 @@ interface TransactionTrackerProps {
   eventTitle?: string;
   ticketTier?: string;
   price?: string;
+  error?: string;
 }
 
 const steps: { key: TxStep; label: string }[] = [
@@ -20,27 +21,34 @@ const steps: { key: TxStep; label: string }[] = [
   { key: "complete", label: "Complete" },
 ];
 
-const TransactionTracker = ({ isOpen, onClose, txHash, eventTitle = "Event", ticketTier = "General", price }: TransactionTrackerProps) => {
+const ARBISCAN_BASE_URL = "https://sepolia.arbiscan.io";
+
+const TransactionTracker = ({ isOpen, onClose, txHash, eventTitle = "Event", ticketTier = "General", price, error }: TransactionTrackerProps) => {
   const [currentStep, setCurrentStep] = useState<TxStep>("confirming");
   const [copied, setCopied] = useState(false);
 
-  // Simulate progression
-  useState(() => {
+  useEffect(() => {
     if (!isOpen) return;
+    
+    setCurrentStep("confirming");
+    
     const timers = [
       setTimeout(() => setCurrentStep("minting"), 1500),
       setTimeout(() => setCurrentStep("finalizing"), 3500),
-      setTimeout(() => setCurrentStep("complete"), 5000),
+      setTimeout(() => setCurrentStep("complete"), 5500),
     ];
+    
     return () => timers.forEach(clearTimeout);
-  });
+  }, [isOpen, txHash]);
 
   const currentIndex = steps.findIndex((s) => s.key === currentStep);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(txHash);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (txHash) {
+      navigator.clipboard.writeText(txHash);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   if (!isOpen) return null;
@@ -65,11 +73,14 @@ const TransactionTracker = ({ isOpen, onClose, txHash, eventTitle = "Event", tic
 
           <div className="text-center mb-6">
             <h3 className="font-display text-xl font-bold text-foreground">
-              {currentStep === "complete" ? "Ticket Minted! 🎉" : "Processing Transaction"}
+              {currentStep === "complete" ? "Ticket Minted!" : currentStep === "error" ? "Transaction Failed" : "Processing Transaction"}
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
               {eventTitle} · {ticketTier} · {price}
             </p>
+            {error && (
+              <p className="text-sm text-red-500 mt-2">{error}</p>
+            )}
           </div>
 
           {/* Steps */}
@@ -105,20 +116,27 @@ const TransactionTracker = ({ isOpen, onClose, txHash, eventTitle = "Event", tic
           </div>
 
           {/* Tx hash */}
-          <div className="rounded-lg bg-muted p-3 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Transaction Hash</p>
-              <p className="text-sm font-mono text-foreground">{txHash}</p>
+          {txHash && (
+            <div className="rounded-lg bg-muted p-3 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Transaction Hash</p>
+                <p className="text-sm font-mono text-foreground truncate max-w-[200px]">{txHash}</p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors">
+                  {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
+                </button>
+                <a 
+                  href={`${ARBISCAN_BASE_URL}/tx/${txHash}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors">
-                {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
-              </button>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
+          )}
 
           {currentStep === "complete" && (
             <motion.button

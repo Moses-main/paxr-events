@@ -14,6 +14,7 @@ export interface EventData {
   imageURI: string;
   location: string;
   ticketPrice: string;
+  ticketPriceUSD: string;
   totalTickets: number;
   ticketsSold: number;
   eventDate: number;
@@ -63,6 +64,7 @@ const EVENT_ABI = [
       { name: 'imageURI', type: 'string' },
       { name: 'location', type: 'string' },
       { name: 'ticketPrice', type: 'uint256' },
+      { name: 'ticketPriceUSD', type: 'uint256' },
       { name: 'totalTickets', type: 'uint256' },
       { name: 'ticketsSold', type: 'uint256' },
       { name: 'eventDate', type: 'uint256' },
@@ -213,18 +215,19 @@ export async function getEvent(eventId: number): Promise<EventData | null> {
       imageURI: event[2],
       location: event[3],
       ticketPrice: event[4].toString(),
-      totalTickets: Number(event[5]),
-      ticketsSold: Number(event[6]),
-      eventDate: Number(event[7]),
-      saleStartTime: Number(event[8]),
-      saleEndTime: Number(event[9]),
-      organizer: event[10],
-      paymentToken: event[11],
-      isActive: event[12],
-      resaleEnabled: event[13],
-      maxResalePrice: event[14].toString(),
-      platformFeePercent: event[15].toString(),
-      groupBuyDiscount: event[16].toString(),
+      ticketPriceUSD: event[5].toString(),
+      totalTickets: Number(event[6]),
+      ticketsSold: Number(event[7]),
+      eventDate: Number(event[8]),
+      saleStartTime: Number(event[9]),
+      saleEndTime: Number(event[10]),
+      organizer: event[11],
+      paymentToken: event[12],
+      isActive: event[13],
+      resaleEnabled: event[14],
+      maxResalePrice: event[15].toString(),
+      platformFeePercent: event[16].toString(),
+      groupBuyDiscount: event[17].toString(),
     };
   } catch {
     return null;

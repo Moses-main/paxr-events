@@ -20,6 +20,11 @@ contract DeployPaxr is Script {
         PaxrTicket ticketNFT = eventContract.ticketNFT();
         console.log("PaxrTicket deployed at:", address(ticketNFT));
 
+        // Initialize the ticket NFT with the event contract address
+        // Note: setEventContract is only callable by the ticket owner (deployer)
+        ticketNFT.setEventContract(address(eventContract));
+        console.log("Event contract initialized in ticket NFT");
+
         PaxrMarketplace marketplace = new PaxrMarketplace(
             deployer,
             treasury,

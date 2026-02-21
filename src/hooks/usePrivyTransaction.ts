@@ -1,24 +1,40 @@
 import { useCallback, useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { encodeFunctionData } from 'viem';
-import { arbitrumSepolia } from 'wagmi/chains';
+import { usePrivy, useSendTransaction, useWallets } from '@privy-io/react-auth';
+import { encodeFunctionData, parseEther } from 'viem';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { toast } from 'sonner';
 
-interface TransactionRequest {
-  to: string;
-  data?: string;
-  value?: string;
-  chainId?: number;
-}
-
-const TARGET_CHAIN_ID = arbitrumSepolia.id;
+const TARGET_CHAIN_ID = 421614; // Arbitrum Sepolia
 
 export function usePrivyTransaction() {
-  const { user, sendTransaction } = usePrivy();
+  const { user } = usePrivy();
+  const { wallets } = useWallets();
+  const { sendTransaction } = useSendTransaction();
   const [isLoading, setIsLoading] = useState(false);
 
   const address = user?.wallet?.address;
+
+  const ensureCorrectChain = useCallback(async () => {
+    const wallet = wallets[0];
+    if (!wallet) {
+      toast.error('No wallet connected');
+      return false;
+    }
+
+    const currentChainId = Number(wallet.chainId);
+    if (currentChainId !== TARGET_CHAIN_ID) {
+      console.log('Switching to correct chain. Current:', currentChainId, 'Target:', TARGET_CHAIN_ID);
+      try {
+        await wallet.switchChain(TARGET_CHAIN_ID);
+        await new Promise(r => setTimeout(r, 1500));
+      } catch (err) {
+        console.error('Failed to switch chain:', err);
+        toast.error('Please switch to Arbitrum Sepolia network');
+        return false;
+      }
+    }
+    return true;
+  }, [wallets]);
 
   const writeContract = useCallback(async (
     abi: readonly any[],
@@ -26,41 +42,55 @@ export function usePrivyTransaction() {
     args: any[],
     value?: string
   ): Promise<string | null> => {
-    if (!address) {
+    const isConnected = !!address || wallets.length > 0;
+    if (!isConnected) {
       toast.error('Please connect your wallet first');
       return null;
     }
 
     setIsLoading(true);
     try {
+      const chainOk = await ensureCorrectChain();
+      if (!chainOk) {
+        setIsLoading(false);
+        return null;
+      }
+
       const data = encodeFunctionData({
         abi,
         functionName,
         args,
       });
 
-      const tx: TransactionRequest = {
+      console.log('Sending transaction:', {
         to: CONTRACT_ADDRESSES.event,
+        functionName,
+        args,
+        value: value ? parseEther(value) : undefined,
+      });
+
+      const tx = await sendTransaction({
+        to: CONTRACT_ADDRESSES.event as `0x${string}`,
         data,
-        chainId: TARGET_CHAIN_ID,
-      };
+        value: value ? parseEther(value) : undefined,
+      });
 
-      if (value) {
-        tx.value = value;
+      if (tx) {
+        toast.success('Transaction sent! Waiting for confirmation...');
+        return tx.hash;
       }
-
-      const receipt = await sendTransaction(tx);
-      const txHash = (receipt as any)?.hash || (receipt as any)?.transactionHash;
-      toast.success('Transaction sent!');
-      return txHash;
+      
+      toast.error('Transaction failed');
+      return null;
     } catch (error: any) {
       console.error('Transaction failed:', error);
-      toast.error(error?.message || 'Transaction failed');
+      const errorMsg = error?.shortMessage || error?.message || 'Transaction failed';
+      toast.error(errorMsg);
       return null;
     } finally {
       setIsLoading(false);
     }
-  }, [address, sendTransaction]);
+  }, [address, wallets, ensureCorrectChain, sendTransaction]);
 
   const writeContractWithChain = useCallback(async (
     abi: readonly any[],
@@ -90,6 +120,7 @@ export const EVENT_ABI = [
       { name: '_imageURI', type: 'string' },
       { name: '_location', type: 'string' },
       { name: '_ticketPrice', type: 'uint256' },
+      { name: '_ticketPriceUSD', type: 'uint256' },
       { name: '_totalTickets', type: 'uint256' },
       { name: '_eventDate', type: 'uint256' },
       { name: '_saleStartTime', type: 'uint256' },
