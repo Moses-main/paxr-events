@@ -2,7 +2,19 @@
 
 ![Paxr Logo](/public/Paxr_generic.png)
 
+[![Twitter Follow](https://img.shields.io/twitter/follow/_Paxr?style=social)](https://x.com/_Paxr)
+
 Paxr is a decentralized event ticketing marketplace built on **Arbitrum Orbit**. It enables event organizers to create events and sell NFT-based tickets with built-in anti-scalping protection, resale controls, and group buy functionality.
+
+## Demo
+
+Watch the demo video to see Paxr in action:
+
+[![Paxr Demo Video](https://img.youtube.com/vi/7ahwuT5gQCg/maxresdefault.jpg)](https://youtu.be/7ahwuT5gQCg)
+
+<a href="https://youtu.be/7ahwuT5gQCg" target="_blank">
+  <img src="https://img.youtube.com/vi/7ahwuT5gQCg/maxresdefault.jpg" alt="Paxr Demo Video" style="width: 100%; max-width: 800px; border-radius: 12px; margin: 20px 0;" />
+</a>
 
 ## Features
 
@@ -220,3 +232,8 @@ For a detailed timeline and feature breakdown, see [ROADMAP.md](./ROADMAP.md).
 ## License
 
 MIT
+
+## Connect With Us
+
+- **Twitter/X**: [@_Paxr](https://x.com/_Paxr)
+- **Demo Video**: [Watch on YouTube](https://youtu.be/7ahwuT5gQCg)

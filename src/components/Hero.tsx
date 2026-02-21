@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Shield, Ticket, Calendar, MapPin, Loader2 } from "lucide-react";
+import { ArrowRight, Shield, Ticket, Calendar, MapPin, Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getActiveEvents, EventData, getEventCount } from "@/lib/alchemy";
 import { usePrices } from "@/hooks/usePrices";
@@ -10,6 +10,7 @@ const Hero = () => {
   const [featuredEvents, setFeaturedEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventCount, setEventCount] = useState<number>(0);
+  const [showVideo, setShowVideo] = useState(false);
   const { prices } = usePrices();
 
   useEffect(() => {
@@ -187,7 +188,51 @@ const Hero = () => {
             </div>
           ))}
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.9 }}
+          className="mt-8 md:mt-12"
+        >
+          <Button
+            variant="outline"
+            onClick={() => setShowVideo(true)}
+            className="border-copper/30 text-foreground hover:bg-copper/10 gap-2"
+          >
+            <Play className="h-4 w-4" />
+            Watch Demo
+          </Button>
+        </motion.div>
       </div>
+
+      {showVideo && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setShowVideo(false)}
+        >
+          <div 
+            className="relative w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowVideo(false)}
+              className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 rounded-full p-2 text-white"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <iframe
+              src="https://www.youtube.com/embed/7ahwuT5gQCg?autoplay=1"
+              title="Paxr Demo Video"
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 };
