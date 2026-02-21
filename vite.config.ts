@@ -43,6 +43,7 @@ export default defineConfig(({ mode }) => ({
           "vendor-charts": ["recharts"],
         },
       },
+      external: ["@privy-io/wagmi"],
     },
     chunkSizeWarningLimit: 1000,
   },

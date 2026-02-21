@@ -188,6 +188,7 @@ export default function CreateEvent() {
           uploadedImageURI,
           data.location,
           ticketPriceWei,
+          BigInt(Math.round(parseFloat(data.ticketPrice))),
           BigInt(data.totalTickets),
           BigInt(Math.floor(new Date(data.eventDate).getTime() / 1000)),
           BigInt(Math.floor(new Date(data.saleStartTime).getTime() / 1000)),

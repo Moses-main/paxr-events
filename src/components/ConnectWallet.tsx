@@ -71,8 +71,8 @@ export function ConnectWallet() {
     await disconnectWallet();
   };
 
-  const handleSwitchAccount = async () => {
-    await switchAccount();
+  const handleSwitchAccount = async (accountAddress: string) => {
+    await switchAccount(accountAddress);
   };
 
   const handleSwitchNetwork = async (targetChainId: number) => {
@@ -156,7 +156,7 @@ export function ConnectWallet() {
                 {linkedAccounts.map((account) => (
                   <DropdownMenuItem
                     key={account.address}
-                    onClick={handleSwitchAccount}
+                    onClick={() => handleSwitchAccount(account.address)}
                     className={`cursor-pointer ${account.address === address ? 'bg-primary/10' : ''}`}
                   >
                     <span className={account.address === address ? 'font-bold' : ''}>

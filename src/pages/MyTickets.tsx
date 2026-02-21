@@ -20,6 +20,7 @@ import { getUserTickets, getTicketData, getEvent, getListing } from "@/lib/alche
 import { toast } from "sonner";
 import { usePrices } from "@/hooks/usePrices";
 import { usePrivyTransaction, TICKET_ABI, MARKETPLACE_ABI, CONTRACT_ADDRESSES } from "@/hooks/usePrivyTransaction";
+import { parseEther } from "viem";
 
 interface TicketNFT {
   tokenId: number;
@@ -104,6 +105,13 @@ const MyTickets = () => {
 
   const handleTransfer = async () => {
     if (!selectedTicket || !transferAddress) return;
+    
+    const isValidAddress = /^0x[0-9a-fA-F]{40}$/.test(transferAddress);
+    if (!isValidAddress) {
+      toast.error("Please enter a valid Ethereum address");
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       const tx = await writeContract(
@@ -118,13 +126,12 @@ const MyTickets = () => {
         setIsSubmitting(false);
         return;
       }
-
-      toast.success("Ticket transferred successfully!");
+      
       setShowTransfer(false);
-      setTransferAddress("");
-      loadTickets();
+      toast.success("Ticket transferred successfully!");
+      await loadTickets();
     } catch (error) {
-      console.error("Transfer failed:", error);
+      console.error("Failed to transfer ticket:", error);
       toast.error("Failed to transfer ticket");
     } finally {
       setIsSubmitting(false);
@@ -133,17 +140,16 @@ const MyTickets = () => {
 
   const handleResell = async () => {
     if (!selectedTicket || !resellPrice) return;
+    
+    const priceValue = parseFloat(resellPrice);
+    if (isNaN(priceValue) || priceValue <= 0) {
+      toast.error("Please enter a valid price greater than $0.00");
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
-      const priceInWei = BigInt(Math.floor(parseFloat(resellPrice) * 1e18));
-      
-      if (maxResalePrice !== "0" && priceInWei > BigInt(maxResalePrice)) {
-        const maxPriceUSD = parseInt(maxResalePrice) / 1e18 * prices.ETH;
-        toast.error(`Price cannot exceed maximum resale price of $${maxPriceUSD.toFixed(2)}`);
-        setIsSubmitting(false);
-        return;
-      }
-
+      const priceInWei = parseEther(priceValue.toString());
       const tx = await writeContract(
         MARKETPLACE_ABI,
         'listTicket',
@@ -169,12 +175,25 @@ const MyTickets = () => {
   };
 
   const openResellModal = async (ticket: TicketNFT) => {
-    setSelectedTicket(ticket);
-    const event = await getEvent(ticket.eventId);
-    if (event) {
+    try {
+      if (!ticket || !ticket.eventId) {
+        toast.error("Invalid ticket data");
+        return;
+      }
+      
+      setSelectedTicket(ticket);
+      const event = await getEvent(ticket.eventId);
+      if (!event) {
+        toast.error("Failed to load event data for resale");
+        return;
+      }
+      
       setMaxResalePrice(event.maxResalePrice);
+      setShowResell(true);
+    } catch (error) {
+      console.error("Failed to open resell modal:", error);
+      toast.error("Failed to open resell modal");
     }
-    setShowResell(true);
   };
 
   const handleShare = (ticket: TicketNFT) => {
@@ -246,7 +265,7 @@ const MyTickets = () => {
               <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs" onClick={() => { setSelectedTicket(ticket); setShowTransfer(true); }}>
                 <Send className="h-3.5 w-3.5" /> Transfer
               </Button>
-              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs" onClick={() => openResellModal(ticket)}>
+              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs" onClick={openResellModal.bind(null, ticket)}>
                 <ArrowLeftRight className="h-3.5 w-3.5" /> Resell
               </Button>
             </>
