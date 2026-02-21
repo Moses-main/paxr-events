@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { usePrices } from "@/hooks/usePrices";
 import { usePrivyTransaction, TICKET_ABI, MARKETPLACE_ABI, CONTRACT_ADDRESSES } from "@/hooks/usePrivyTransaction";
 import { parseEther } from "viem";
+import { useWallets } from "@privy-io/react-auth";
 
 interface TicketNFT {
   tokenId: number;
@@ -39,6 +40,7 @@ interface TicketNFT {
 
 const MyTickets = () => {
   const { address, isConnected } = useWallet();
+  const { wallets } = useWallets();
   const { writeContract, isLoading: isTxLoading } = usePrivyTransaction();
   const { prices } = usePrices();
   
@@ -58,16 +60,28 @@ const MyTickets = () => {
     if (isConnected && address) {
       loadTickets();
     }
-  }, [isConnected, address]);
+  }, [isConnected, address, wallets]);
 
   const loadTickets = async () => {
     if (!address) return;
     setIsLoading(true);
     try {
-      const tokenIds = await getUserTickets(address);
+      const walletAddresses = [...new Set([
+        address,
+        ...wallets.map(w => w.address.toLowerCase())
+      ])];
+      
+      const allTokenIds: number[] = [];
+      
+      for (const walletAddr of walletAddresses) {
+        const tokenIds = await getUserTickets(walletAddr);
+        allTokenIds.push(...tokenIds);
+      }
+      
+      const uniqueTokenIds = [...new Set(allTokenIds)];
       const loadedTickets: TicketNFT[] = [];
 
-      for (const tokenId of tokenIds) {
+      for (const tokenId of uniqueTokenIds) {
         const ticketData = await getTicketData(tokenId);
         if (ticketData) {
           const event = await getEvent(ticketData.eventId);
