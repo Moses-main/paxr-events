@@ -19,7 +19,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { getUserTickets, getTicketData, getEvent, getListing } from "@/lib/alchemy";
 import { toast } from "sonner";
 import { usePrices } from "@/hooks/usePrices";
-import { usePrivyTransaction, TICKET_ABI, MARKETPLACE_ABI } from "@/hooks/usePrivyTransaction";
+import { usePrivyTransaction, TICKET_ABI, MARKETPLACE_ABI, CONTRACT_ADDRESSES } from "@/hooks/usePrivyTransaction";
 
 interface TicketNFT {
   tokenId: number;
@@ -108,8 +108,10 @@ const MyTickets = () => {
     try {
       const tx = await writeContract(
         TICKET_ABI,
-        'transferFrom',
+        'safeTransferFrom',
         [address as `0x${string}`, transferAddress as `0x${string}`, BigInt(selectedTicket.tokenId)],
+        undefined,
+        CONTRACT_ADDRESSES.ticket
       );
       
       if (!tx) {
@@ -146,6 +148,8 @@ const MyTickets = () => {
         MARKETPLACE_ABI,
         'listTicket',
         [BigInt(selectedTicket.tokenId), priceInWei],
+        undefined,
+        CONTRACT_ADDRESSES.marketplace
       );
 
       if (!tx) {
@@ -171,6 +175,25 @@ const MyTickets = () => {
       setMaxResalePrice(event.maxResalePrice);
     }
     setShowResell(true);
+  };
+
+  const handleShare = (ticket: TicketNFT) => {
+    const shareUrl = `${window.location.origin}/event/${ticket.eventId}`;
+    const shareText = `Check out this event: ${ticket.eventName} - ${ticket.eventDate}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: ticket.eventName,
+        text: shareText,
+        url: shareUrl,
+      }).catch(() => {
+        navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied to clipboard!");
+      });
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied to clipboard!");
+    }
   };
 
   const activeTickets = tickets.filter((t) => t.status === "active");
@@ -232,7 +255,7 @@ const MyTickets = () => {
               <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs" onClick={() => { setSelectedTicket(ticket); setShowAttendanceProof(true); }}>
                 <BadgeCheck className="h-3.5 w-3.5" /> Proof
               </Button>
-              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs">
+              <Button size="sm" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground gap-1.5 text-xs" onClick={() => handleShare(ticket)}>
                 <Shield className="h-3.5 w-3.5" /> Share
               </Button>
             </>
@@ -332,7 +355,7 @@ const MyTickets = () => {
                 <div className="bg-white p-4 rounded-lg mb-4">
                   <img 
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                      `paxr://ticket/${selectedTicket.tokenId}`
+                      `${window.location.origin}/event/${selectedTicket.eventId}`
                     )}`} 
                     alt="Ticket QR Code" 
                     className="w-48 h-48"
@@ -340,6 +363,14 @@ const MyTickets = () => {
                 </div>
                 <p className="font-mono text-lg font-bold">{selectedTicket.eventName}</p>
                 <p className="text-muted-foreground text-sm">Token ID: #{selectedTicket.tokenId}</p>
+                <a 
+                  href={`https://sepolia.arbiscan.io/nft/${CONTRACT_ADDRESSES.ticket}/${selectedTicket.tokenId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary text-sm mt-2 flex items-center gap-1 hover:underline"
+                >
+                  View on Arbiscan <ExternalLink className="h-3 w-3" />
+                </a>
               </>
             )}
           </div>

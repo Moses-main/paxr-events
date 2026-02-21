@@ -40,7 +40,8 @@ export function usePrivyTransaction() {
     abi: readonly any[],
     functionName: string,
     args: any[],
-    value?: string
+    value?: string,
+    toAddress?: string
   ): Promise<string | null> => {
     const isConnected = !!address || wallets.length > 0;
     if (!isConnected) {
@@ -56,6 +57,8 @@ export function usePrivyTransaction() {
         return null;
       }
 
+      const targetAddress = toAddress || CONTRACT_ADDRESSES.event;
+
       const data = encodeFunctionData({
         abi,
         functionName,
@@ -63,14 +66,14 @@ export function usePrivyTransaction() {
       });
 
       console.log('Sending transaction:', {
-        to: CONTRACT_ADDRESSES.event,
+        to: targetAddress,
         functionName,
         args,
         value: value ? parseEther(value) : undefined,
       });
 
       const tx = await sendTransaction({
-        to: CONTRACT_ADDRESSES.event as `0x${string}`,
+        to: targetAddress as `0x${string}`,
         data,
         value: value ? parseEther(value) : undefined,
       });
