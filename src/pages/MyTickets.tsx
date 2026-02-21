@@ -437,17 +437,17 @@ const MyTickets = () => {
               placeholder="0x..." 
               value={transferAddress}
               onChange={(e) => setTransferAddress(e.target.value)}
-              className="mt-2"
+              className="mt-2 font-mono"
             />
             <p className="text-xs text-muted-foreground mt-2">
               This action cannot be undone.
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowTransfer(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setShowTransfer(false); setTransferAddress(""); }}>Cancel</Button>
             <Button 
               onClick={handleTransfer} 
-              disabled={isSubmitting || !transferAddress}
+              disabled={isSubmitting}
               className="bg-copper-500 hover:bg-copper-600"
             >
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
