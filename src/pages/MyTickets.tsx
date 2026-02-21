@@ -443,7 +443,7 @@ const MyTickets = () => {
               This action cannot be undone.
             </p>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => { setShowTransfer(false); setTransferAddress(""); }}>Cancel</Button>
             <Button 
               onClick={handleTransfer} 
@@ -453,7 +453,7 @@ const MyTickets = () => {
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
               Transfer
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -479,17 +479,17 @@ const MyTickets = () => {
               className="mt-2"
             />
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowResell(false)}>Cancel</Button>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => { setShowResell(false); setResellPrice(""); }}>Cancel</Button>
             <Button 
               onClick={handleResell} 
-              disabled={isSubmitting || !resellPrice}
+              disabled={isSubmitting}
               className="bg-copper-500 hover:bg-copper-600"
             >
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowLeftRight className="h-4 w-4 mr-2" />}
               List Ticket
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
