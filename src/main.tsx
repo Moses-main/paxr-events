@@ -2,4 +2,6 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
+globalThis.Buffer = globalThis.Buffer || require("buffer").Buffer;
+
 createRoot(document.getElementById("root")!).render(<App />);
